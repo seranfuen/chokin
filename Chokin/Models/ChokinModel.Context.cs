@@ -12,10 +12,8 @@ namespace Chokin.Models
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
-    using Microsoft.AspNet.Identity;
-    using Microsoft.AspNet.Identity.EntityFramework;
     
-    public partial class ChokinEntities : IdentityDbContext<ApplicationUser>
+    public partial class ChokinEntities : DbContext
     {
         public ChokinEntities()
             : base("name=ChokinEntities")
