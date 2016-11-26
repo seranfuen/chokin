@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="685ff42d0a294a03887f4e69a7cb7b57" Name="Diagram1">
+        <EntityTypeShape EntityType="ChokinModel.Account" Width="1.5" PointX="3" PointY="3.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="ChokinModel.Currency" Width="1.5" PointX="0.75" PointY="3.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="ChokinModel.JournalEntry" Width="1.5" PointX="5.25" PointY="3.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="ChokinModel.RecurringTransaction" Width="1.5" PointX="8.25" PointY="3.375" IsExpanded="true" />
+        <AssociationConnector Association="ChokinModel.FK_Account_Currency" ManuallyRouted="false" />
+        <AssociationConnector Association="ChokinModel.FK_JournalEntry_CreditAccount" ManuallyRouted="false" />
+        <AssociationConnector Association="ChokinModel.FK_JournalEntry_DebitAccount" ManuallyRouted="false" />
+        <AssociationConnector Association="ChokinModel.FK_RecurringTransaction_CreditAccount" ManuallyRouted="false" />
+        <AssociationConnector Association="ChokinModel.FK_RecurringTransaction_DebitAccount" ManuallyRouted="false" />
+        <AssociationConnector Association="ChokinModel.FK_JournalEntry_Currency" ManuallyRouted="false" />
+        <AssociationConnector Association="ChokinModel.FK_RecurringTransaction_Currency" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="ChokinModel.AspNetRole" Width="1.5" PointX="0.75" PointY="9.5" />
+        <EntityTypeShape EntityType="ChokinModel.AspNetUserClaim" Width="1.5" PointX="5.25" PointY="10.625" />
+        <EntityTypeShape EntityType="ChokinModel.AspNetUserLogin" Width="1.5" PointX="5.25" PointY="8" />
+        <EntityTypeShape EntityType="ChokinModel.AspNetUser" Width="1.5" PointX="3" PointY="8.375" />
+        <AssociationConnector Association="ChokinModel.FK_dbo_AspNetUserClaims_dbo_AspNetUsers_UserId" />
+        <AssociationConnector Association="ChokinModel.FK_dbo_AspNetUserLogins_dbo_AspNetUsers_UserId" />
+        <AssociationConnector Association="ChokinModel.AspNetUserRoles" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>
