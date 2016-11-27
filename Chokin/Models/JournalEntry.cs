@@ -21,12 +21,13 @@ namespace Chokin.Models
         public int DebitAccountId { get; set; }
         public int CreditAccountId { get; set; }
         public int CurrencyId { get; set; }
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         public bool IsRecurring { get; set; }
         public bool IsCancelling { get; set; }
     
-        public virtual Account CreditAccount { get; set; }
-        public virtual Account DebitAccount { get; set; }
+        public virtual Account Account { get; set; }
+        public virtual Account Account1 { get; set; }
+        public virtual AspNetUser AspNetUser { get; set; }
         public virtual Currency Currency { get; set; }
     }
 }

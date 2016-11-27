@@ -9,10 +9,10 @@
           <Key>
             <PropertyRef Name="Id" />
           </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Id" Type="int" Nullable="false" />
           <Property Name="TypeId" Type="int" Nullable="false" />
           <Property Name="CurrencyId" Type="int" Nullable="false" />
-          <Property Name="UserId" Type="int" Nullable="false" />
+          <Property Name="UserId" Type="nvarchar" MaxLength="128" Nullable="false" />
           <Property Name="Name" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="Description" Type="nvarchar" MaxLength="500" />
           <Property Name="Debit" Type="numeric" Precision="18" Scale="3" Nullable="false" />
@@ -89,7 +89,7 @@
           <Property Name="DebitAccountId" Type="int" Nullable="false" />
           <Property Name="CreditAccountId" Type="int" Nullable="false" />
           <Property Name="CurrencyId" Type="int" Nullable="false" />
-          <Property Name="UserId" Type="int" Nullable="false" />
+          <Property Name="UserId" Type="nvarchar" MaxLength="128" Nullable="false" />
           <Property Name="IsRecurring" Type="bit" Nullable="false" />
           <Property Name="IsCancelling" Type="bit" Nullable="false" />
         </EntityType>
@@ -105,9 +105,21 @@
           <Property Name="CreditAcountId" Type="int" Nullable="false" />
           <Property Name="DayMonth" Type="tinyint" Nullable="false" />
           <Property Name="Active" Type="bit" Nullable="false" />
-          <Property Name="UserId" Type="int" Nullable="false" />
+          <Property Name="UserId" Type="nvarchar" MaxLength="128" Nullable="false" />
           <Property Name="CurrencyId" Type="int" Nullable="false" />
         </EntityType>
+        <Association Name="FK_Account_AspNetUsers">
+          <End Role="AspNetUsers" Type="Self.AspNetUsers" Multiplicity="1" />
+          <End Role="Account" Type="Self.Account" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="AspNetUsers">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Account">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Account_Currency">
           <End Role="Currency" Type="Self.Currency" Multiplicity="1" />
           <End Role="Account" Type="Self.Account" Multiplicity="*" />
@@ -176,6 +188,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_JournalEntry_AspNetUsers">
+          <End Role="AspNetUsers" Type="Self.AspNetUsers" Multiplicity="1" />
+          <End Role="JournalEntry" Type="Self.JournalEntry" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="AspNetUsers">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="JournalEntry">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_JournalEntry_CreditAccount">
           <End Role="Account" Type="Self.Account" Multiplicity="1" />
           <End Role="JournalEntry" Type="Self.JournalEntry" Multiplicity="*" />
@@ -209,6 +233,18 @@
             </Principal>
             <Dependent Role="JournalEntry">
               <PropertyRef Name="DebitAccountId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_RecurringTransaction_AspNetUsers">
+          <End Role="AspNetUsers" Type="Self.AspNetUsers" Multiplicity="1" />
+          <End Role="RecurringTransaction" Type="Self.RecurringTransaction" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="AspNetUsers">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="RecurringTransaction">
+              <PropertyRef Name="UserId" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -258,6 +294,10 @@
           <EntitySet Name="Currency" EntityType="Self.Currency" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="JournalEntry" EntityType="Self.JournalEntry" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="RecurringTransaction" EntityType="Self.RecurringTransaction" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_Account_AspNetUsers" Association="Self.FK_Account_AspNetUsers">
+            <End Role="AspNetUsers" EntitySet="AspNetUsers" />
+            <End Role="Account" EntitySet="Account" />
+          </AssociationSet>
           <AssociationSet Name="FK_Account_Currency" Association="Self.FK_Account_Currency">
             <End Role="Currency" EntitySet="Currency" />
             <End Role="Account" EntitySet="Account" />
@@ -278,6 +318,10 @@
             <End Role="AspNetUsers" EntitySet="AspNetUsers" />
             <End Role="AspNetUserRoles" EntitySet="AspNetUserRoles" />
           </AssociationSet>
+          <AssociationSet Name="FK_JournalEntry_AspNetUsers" Association="Self.FK_JournalEntry_AspNetUsers">
+            <End Role="AspNetUsers" EntitySet="AspNetUsers" />
+            <End Role="JournalEntry" EntitySet="JournalEntry" />
+          </AssociationSet>
           <AssociationSet Name="FK_JournalEntry_CreditAccount" Association="Self.FK_JournalEntry_CreditAccount">
             <End Role="Account" EntitySet="Account" />
             <End Role="JournalEntry" EntitySet="JournalEntry" />
@@ -289,6 +333,10 @@
           <AssociationSet Name="FK_JournalEntry_DebitAccount" Association="Self.FK_JournalEntry_DebitAccount">
             <End Role="Account" EntitySet="Account" />
             <End Role="JournalEntry" EntitySet="JournalEntry" />
+          </AssociationSet>
+          <AssociationSet Name="FK_RecurringTransaction_AspNetUsers" Association="Self.FK_RecurringTransaction_AspNetUsers">
+            <End Role="AspNetUsers" EntitySet="AspNetUsers" />
+            <End Role="RecurringTransaction" EntitySet="RecurringTransaction" />
           </AssociationSet>
           <AssociationSet Name="FK_RecurringTransaction_CreditAccount" Association="Self.FK_RecurringTransaction_CreditAccount">
             <End Role="Account" EntitySet="Account" />
@@ -307,186 +355,7 @@
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="ChokinModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
-        <EntityType Name="Account">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="TypeId" Type="Int32" Nullable="false" />
-          <Property Name="CurrencyId" Type="Int32" Nullable="false" />
-          <Property Name="UserId" Type="Int32" Nullable="false" />
-          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="Description" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
-          <Property Name="Debit" Type="Decimal" Precision="18" Scale="3" Nullable="false" />
-          <Property Name="Credit" Type="Decimal" Precision="18" Scale="3" Nullable="false" />
-          <NavigationProperty Name="Currency" Relationship="Self.FK_Account_Currency" FromRole="Account" ToRole="Currency" />
-          <NavigationProperty Name="CreditEntries" Relationship="Self.FK_JournalEntry_CreditAccount" FromRole="Account" ToRole="JournalEntry" />
-          <NavigationProperty Name="DebitEntries" Relationship="Self.FK_JournalEntry_DebitAccount" FromRole="Account" ToRole="JournalEntry" />
-          <NavigationProperty Name="RecurringCredits" Relationship="Self.FK_RecurringTransaction_CreditAccount" FromRole="Account" ToRole="RecurringTransaction" />
-          <NavigationProperty Name="RecurringDebits" Relationship="Self.FK_RecurringTransaction_DebitAccount" FromRole="Account" ToRole="RecurringTransaction" />
-        </EntityType>
-        <EntityType Name="Currency">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Name" Type="String" MaxLength="20" FixedLength="true" Unicode="true" Nullable="false" />
-          <Property Name="Symbol" Type="String" MaxLength="5" FixedLength="true" Unicode="true" Nullable="false" />
-          <Property Name="Country" Type="String" MaxLength="3" FixedLength="true" Unicode="true" />
-        </EntityType>
-        <EntityType Name="JournalEntry">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="Amount" Type="Decimal" Precision="18" Scale="3" Nullable="false" />
-          <Property Name="Date" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="Concept" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
-          <Property Name="DebitAccountId" Type="Int32" Nullable="false" />
-          <Property Name="CreditAccountId" Type="Int32" Nullable="false" />
-          <Property Name="CurrencyId" Type="Int32" Nullable="false" />
-          <Property Name="UserId" Type="Int32" Nullable="false" />
-          <Property Name="IsRecurring" Type="Boolean" Nullable="false" />
-          <Property Name="IsCancelling" Type="Boolean" Nullable="false" />
-          <NavigationProperty Name="CreditAccount" Relationship="Self.FK_JournalEntry_CreditAccount" FromRole="JournalEntry" ToRole="Account" />
-          <NavigationProperty Name="DebitAccount" Relationship="Self.FK_JournalEntry_DebitAccount" FromRole="JournalEntry" ToRole="Account" />
-          <NavigationProperty Name="Currency" Relationship="Self.FK_JournalEntry_Currency" FromRole="JournalEntry" ToRole="Currency" />
-        </EntityType>
-        <EntityType Name="RecurringTransaction">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" />
-          <Property Name="Name" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="Concept" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
-          <Property Name="Amount" Type="Decimal" Precision="18" Scale="3" Nullable="false" />
-          <Property Name="DebitAccountId" Type="Int32" Nullable="false" />
-          <Property Name="CreditAcountId" Type="Int32" Nullable="false" />
-          <Property Name="DayMonth" Type="Byte" Nullable="false" />
-          <Property Name="Active" Type="Boolean" Nullable="false" />
-          <Property Name="UserId" Type="Int32" Nullable="false" />
-          <Property Name="CurrencyId" Type="Int32" Nullable="false" />
-          <NavigationProperty Name="CreditAccount" Relationship="Self.FK_RecurringTransaction_CreditAccount" FromRole="RecurringTransaction" ToRole="Account" />
-          <NavigationProperty Name="DebitAccount" Relationship="Self.FK_RecurringTransaction_DebitAccount" FromRole="RecurringTransaction" ToRole="Account" />
-          <NavigationProperty Name="Currency" Relationship="Self.FK_RecurringTransaction_Currency" FromRole="RecurringTransaction" ToRole="Currency" />
-        </EntityType>
-        <Association Name="FK_Account_Currency">
-          <End Role="Currency" Type="Self.Currency" Multiplicity="1" />
-          <End Role="Account" Type="Self.Account" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Currency">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="Account">
-              <PropertyRef Name="CurrencyId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_JournalEntry_CreditAccount">
-          <End Role="Account" Type="Self.Account" Multiplicity="1" />
-          <End Role="JournalEntry" Type="Self.JournalEntry" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Account">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="JournalEntry">
-              <PropertyRef Name="CreditAccountId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_JournalEntry_DebitAccount">
-          <End Role="Account" Type="Self.Account" Multiplicity="1" />
-          <End Role="JournalEntry" Type="Self.JournalEntry" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Account">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="JournalEntry">
-              <PropertyRef Name="DebitAccountId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_RecurringTransaction_CreditAccount">
-          <End Role="Account" Type="Self.Account" Multiplicity="1" />
-          <End Role="RecurringTransaction" Type="Self.RecurringTransaction" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Account">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="RecurringTransaction">
-              <PropertyRef Name="CreditAcountId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_RecurringTransaction_DebitAccount">
-          <End Role="Account" Type="Self.Account" Multiplicity="1" />
-          <End Role="RecurringTransaction" Type="Self.RecurringTransaction" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Account">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="RecurringTransaction">
-              <PropertyRef Name="DebitAccountId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_JournalEntry_Currency">
-          <End Role="Currency" Type="Self.Currency" Multiplicity="1" />
-          <End Role="JournalEntry" Type="Self.JournalEntry" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Currency">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="JournalEntry">
-              <PropertyRef Name="CurrencyId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_RecurringTransaction_Currency">
-          <End Role="Currency" Type="Self.Currency" Multiplicity="1" />
-          <End Role="RecurringTransaction" Type="Self.RecurringTransaction" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Currency">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="RecurringTransaction">
-              <PropertyRef Name="CurrencyId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <EntityContainer Name="ChokinEntities" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="Accounts" EntityType="Self.Account" />
-          <EntitySet Name="Currencies" EntityType="Self.Currency" />
-          <EntitySet Name="JournalEntries" EntityType="Self.JournalEntry" />
-          <EntitySet Name="RecurringTransactions" EntityType="Self.RecurringTransaction" />
-          <AssociationSet Name="FK_Account_Currency" Association="Self.FK_Account_Currency">
-            <End Role="Currency" EntitySet="Currencies" />
-            <End Role="Account" EntitySet="Accounts" />
-          </AssociationSet>
-          <AssociationSet Name="FK_JournalEntry_CreditAccount" Association="Self.FK_JournalEntry_CreditAccount">
-            <End Role="Account" EntitySet="Accounts" />
-            <End Role="JournalEntry" EntitySet="JournalEntries" />
-          </AssociationSet>
-          <AssociationSet Name="FK_JournalEntry_DebitAccount" Association="Self.FK_JournalEntry_DebitAccount">
-            <End Role="Account" EntitySet="Accounts" />
-            <End Role="JournalEntry" EntitySet="JournalEntries" />
-          </AssociationSet>
-          <AssociationSet Name="FK_RecurringTransaction_CreditAccount" Association="Self.FK_RecurringTransaction_CreditAccount">
-            <End Role="Account" EntitySet="Accounts" />
-            <End Role="RecurringTransaction" EntitySet="RecurringTransactions" />
-          </AssociationSet>
-          <AssociationSet Name="FK_RecurringTransaction_DebitAccount" Association="Self.FK_RecurringTransaction_DebitAccount">
-            <End Role="Account" EntitySet="Accounts" />
-            <End Role="RecurringTransaction" EntitySet="RecurringTransactions" />
-          </AssociationSet>
-          <AssociationSet Name="FK_JournalEntry_Currency" Association="Self.FK_JournalEntry_Currency">
-            <End Role="Currency" EntitySet="Currencies" />
-            <End Role="JournalEntry" EntitySet="JournalEntries" />
-          </AssociationSet>
-          <AssociationSet Name="FK_RecurringTransaction_Currency" Association="Self.FK_RecurringTransaction_Currency">
-            <End Role="Currency" EntitySet="Currencies" />
-            <End Role="RecurringTransaction" EntitySet="RecurringTransactions" />
-          </AssociationSet>
           <EntitySet Name="AspNetRoles" EntityType="ChokinModel.AspNetRole" />
           <EntitySet Name="AspNetUserClaims" EntityType="ChokinModel.AspNetUserClaim" />
           <EntitySet Name="AspNetUserLogins" EntityType="ChokinModel.AspNetUserLogin" />
@@ -503,7 +372,51 @@
             <End Role="AspNetRole" EntitySet="AspNetRoles" />
             <End Role="AspNetUser" EntitySet="AspNetUsers" />
           </AssociationSet>
-        </EntityContainer>
+          <EntitySet Name="Accounts" EntityType="ChokinModel.Account" />
+          <EntitySet Name="Currencies" EntityType="ChokinModel.Currency" />
+          <EntitySet Name="JournalEntries" EntityType="ChokinModel.JournalEntry" />
+          <EntitySet Name="RecurringTransactions" EntityType="ChokinModel.RecurringTransaction" />
+          <AssociationSet Name="FK_Account_AspNetUsers" Association="ChokinModel.FK_Account_AspNetUsers">
+            <End Role="AspNetUser" EntitySet="AspNetUsers" />
+            <End Role="Account" EntitySet="Accounts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Account_Currency" Association="ChokinModel.FK_Account_Currency">
+            <End Role="Currency" EntitySet="Currencies" />
+            <End Role="Account" EntitySet="Accounts" />
+          </AssociationSet>
+          <AssociationSet Name="FK_JournalEntry_CreditAccount" Association="ChokinModel.FK_JournalEntry_CreditAccount">
+            <End Role="Account" EntitySet="Accounts" />
+            <End Role="JournalEntry" EntitySet="JournalEntries" />
+          </AssociationSet>
+          <AssociationSet Name="FK_JournalEntry_DebitAccount" Association="ChokinModel.FK_JournalEntry_DebitAccount">
+            <End Role="Account" EntitySet="Accounts" />
+            <End Role="JournalEntry" EntitySet="JournalEntries" />
+          </AssociationSet>
+          <AssociationSet Name="FK_RecurringTransaction_CreditAccount" Association="ChokinModel.FK_RecurringTransaction_CreditAccount">
+            <End Role="Account" EntitySet="Accounts" />
+            <End Role="RecurringTransaction" EntitySet="RecurringTransactions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_RecurringTransaction_DebitAccount" Association="ChokinModel.FK_RecurringTransaction_DebitAccount">
+            <End Role="Account" EntitySet="Accounts" />
+            <End Role="RecurringTransaction" EntitySet="RecurringTransactions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_JournalEntry_AspNetUsers" Association="ChokinModel.FK_JournalEntry_AspNetUsers">
+            <End Role="AspNetUser" EntitySet="AspNetUsers" />
+            <End Role="JournalEntry" EntitySet="JournalEntries" />
+          </AssociationSet>
+          <AssociationSet Name="FK_RecurringTransaction_AspNetUsers" Association="ChokinModel.FK_RecurringTransaction_AspNetUsers">
+            <End Role="AspNetUser" EntitySet="AspNetUsers" />
+            <End Role="RecurringTransaction" EntitySet="RecurringTransactions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_JournalEntry_Currency" Association="ChokinModel.FK_JournalEntry_Currency">
+            <End Role="Currency" EntitySet="Currencies" />
+            <End Role="JournalEntry" EntitySet="JournalEntries" />
+          </AssociationSet>
+          <AssociationSet Name="FK_RecurringTransaction_Currency" Association="ChokinModel.FK_RecurringTransaction_Currency">
+            <End Role="Currency" EntitySet="Currencies" />
+            <End Role="RecurringTransaction" EntitySet="RecurringTransactions" />
+          </AssociationSet>
+          </EntityContainer>
         <EntityType Name="AspNetRole">
           <Key>
             <PropertyRef Name="Id" />
@@ -552,7 +465,10 @@
           <NavigationProperty Name="AspNetUserClaims" Relationship="ChokinModel.FK_dbo_AspNetUserClaims_dbo_AspNetUsers_UserId" FromRole="AspNetUser" ToRole="AspNetUserClaim" />
           <NavigationProperty Name="AspNetUserLogins" Relationship="ChokinModel.FK_dbo_AspNetUserLogins_dbo_AspNetUsers_UserId" FromRole="AspNetUser" ToRole="AspNetUserLogin" />
           <NavigationProperty Name="AspNetRoles" Relationship="ChokinModel.AspNetUserRoles" FromRole="AspNetUser" ToRole="AspNetRole" />
-        </EntityType>
+          <NavigationProperty Name="Accounts" Relationship="ChokinModel.FK_Account_AspNetUsers" FromRole="AspNetUser" ToRole="Account" />
+          <NavigationProperty Name="JournalEntries" Relationship="ChokinModel.FK_JournalEntry_AspNetUsers" FromRole="AspNetUser" ToRole="JournalEntry" />
+          <NavigationProperty Name="RecurringTransactions" Relationship="ChokinModel.FK_RecurringTransaction_AspNetUsers" FromRole="AspNetUser" ToRole="RecurringTransaction" />
+          </EntityType>
         <Association Name="FK_dbo_AspNetUserClaims_dbo_AspNetUsers_UserId">
           <End Type="ChokinModel.AspNetUser" Role="AspNetUser" Multiplicity="1">
             <OnDelete Action="Cascade" />
@@ -585,68 +501,201 @@
           <End Type="ChokinModel.AspNetRole" Role="AspNetRole" Multiplicity="*" />
           <End Type="ChokinModel.AspNetUser" Role="AspNetUser" Multiplicity="*" />
         </Association>
-      </Schema>
+        <EntityType Name="Account">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" />
+          <Property Name="TypeId" Type="Int32" Nullable="false" />
+          <Property Name="CurrencyId" Type="Int32" Nullable="false" />
+          <Property Name="UserId" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Description" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Debit" Type="Decimal" Nullable="false" Precision="18" Scale="3" />
+          <Property Name="Credit" Type="Decimal" Nullable="false" Precision="18" Scale="3" />
+          <NavigationProperty Name="AspNetUser" Relationship="ChokinModel.FK_Account_AspNetUsers" FromRole="Account" ToRole="AspNetUser" />
+          <NavigationProperty Name="Currency" Relationship="ChokinModel.FK_Account_Currency" FromRole="Account" ToRole="Currency" />
+          <NavigationProperty Name="JournalEntries" Relationship="ChokinModel.FK_JournalEntry_CreditAccount" FromRole="Account" ToRole="JournalEntry" />
+          <NavigationProperty Name="JournalEntries1" Relationship="ChokinModel.FK_JournalEntry_DebitAccount" FromRole="Account" ToRole="JournalEntry" />
+          <NavigationProperty Name="RecurringTransactions" Relationship="ChokinModel.FK_RecurringTransaction_CreditAccount" FromRole="Account" ToRole="RecurringTransaction" />
+          <NavigationProperty Name="RecurringTransactions1" Relationship="ChokinModel.FK_RecurringTransaction_DebitAccount" FromRole="Account" ToRole="RecurringTransaction" />
+        </EntityType>
+        <EntityType Name="Currency">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="20" FixedLength="true" Unicode="true" />
+          <Property Name="Symbol" Type="String" Nullable="false" MaxLength="5" FixedLength="true" Unicode="true" />
+          <Property Name="Country" Type="String" MaxLength="3" FixedLength="true" Unicode="true" />
+          <NavigationProperty Name="Accounts" Relationship="ChokinModel.FK_Account_Currency" FromRole="Currency" ToRole="Account" />
+          <NavigationProperty Name="JournalEntries" Relationship="ChokinModel.FK_JournalEntry_Currency" FromRole="Currency" ToRole="JournalEntry" />
+          <NavigationProperty Name="RecurringTransactions" Relationship="ChokinModel.FK_RecurringTransaction_Currency" FromRole="Currency" ToRole="RecurringTransaction" />
+        </EntityType>
+        <EntityType Name="JournalEntry">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Amount" Type="Decimal" Nullable="false" Precision="18" Scale="3" />
+          <Property Name="Date" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="Concept" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="DebitAccountId" Type="Int32" Nullable="false" />
+          <Property Name="CreditAccountId" Type="Int32" Nullable="false" />
+          <Property Name="CurrencyId" Type="Int32" Nullable="false" />
+          <Property Name="UserId" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="IsRecurring" Type="Boolean" Nullable="false" />
+          <Property Name="IsCancelling" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="Account" Relationship="ChokinModel.FK_JournalEntry_CreditAccount" FromRole="JournalEntry" ToRole="Account" />
+          <NavigationProperty Name="Account1" Relationship="ChokinModel.FK_JournalEntry_DebitAccount" FromRole="JournalEntry" ToRole="Account" />
+          <NavigationProperty Name="AspNetUser" Relationship="ChokinModel.FK_JournalEntry_AspNetUsers" FromRole="JournalEntry" ToRole="AspNetUser" />
+          <NavigationProperty Name="Currency" Relationship="ChokinModel.FK_JournalEntry_Currency" FromRole="JournalEntry" ToRole="Currency" />
+        </EntityType>
+        <EntityType Name="RecurringTransaction">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Concept" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Amount" Type="Decimal" Nullable="false" Precision="18" Scale="3" />
+          <Property Name="DebitAccountId" Type="Int32" Nullable="false" />
+          <Property Name="CreditAcountId" Type="Int32" Nullable="false" />
+          <Property Name="DayMonth" Type="Byte" Nullable="false" />
+          <Property Name="Active" Type="Boolean" Nullable="false" />
+          <Property Name="UserId" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="true" />
+          <Property Name="CurrencyId" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Account" Relationship="ChokinModel.FK_RecurringTransaction_CreditAccount" FromRole="RecurringTransaction" ToRole="Account" />
+          <NavigationProperty Name="Account1" Relationship="ChokinModel.FK_RecurringTransaction_DebitAccount" FromRole="RecurringTransaction" ToRole="Account" />
+          <NavigationProperty Name="AspNetUser" Relationship="ChokinModel.FK_RecurringTransaction_AspNetUsers" FromRole="RecurringTransaction" ToRole="AspNetUser" />
+          <NavigationProperty Name="Currency" Relationship="ChokinModel.FK_RecurringTransaction_Currency" FromRole="RecurringTransaction" ToRole="Currency" />
+        </EntityType>
+        <Association Name="FK_Account_AspNetUsers">
+          <End Type="ChokinModel.AspNetUser" Role="AspNetUser" Multiplicity="1" />
+          <End Type="ChokinModel.Account" Role="Account" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="AspNetUser">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Account">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Account_Currency">
+          <End Type="ChokinModel.Currency" Role="Currency" Multiplicity="1" />
+          <End Type="ChokinModel.Account" Role="Account" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Currency">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Account">
+              <PropertyRef Name="CurrencyId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_JournalEntry_CreditAccount">
+          <End Type="ChokinModel.Account" Role="Account" Multiplicity="1" />
+          <End Type="ChokinModel.JournalEntry" Role="JournalEntry" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Account">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="JournalEntry">
+              <PropertyRef Name="CreditAccountId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_JournalEntry_DebitAccount">
+          <End Type="ChokinModel.Account" Role="Account" Multiplicity="1" />
+          <End Type="ChokinModel.JournalEntry" Role="JournalEntry" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Account">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="JournalEntry">
+              <PropertyRef Name="DebitAccountId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_RecurringTransaction_CreditAccount">
+          <End Type="ChokinModel.Account" Role="Account" Multiplicity="1" />
+          <End Type="ChokinModel.RecurringTransaction" Role="RecurringTransaction" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Account">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="RecurringTransaction">
+              <PropertyRef Name="CreditAcountId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_RecurringTransaction_DebitAccount">
+          <End Type="ChokinModel.Account" Role="Account" Multiplicity="1" />
+          <End Type="ChokinModel.RecurringTransaction" Role="RecurringTransaction" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Account">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="RecurringTransaction">
+              <PropertyRef Name="DebitAccountId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_JournalEntry_AspNetUsers">
+          <End Type="ChokinModel.AspNetUser" Role="AspNetUser" Multiplicity="1" />
+          <End Type="ChokinModel.JournalEntry" Role="JournalEntry" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="AspNetUser">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="JournalEntry">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_RecurringTransaction_AspNetUsers">
+          <End Type="ChokinModel.AspNetUser" Role="AspNetUser" Multiplicity="1" />
+          <End Type="ChokinModel.RecurringTransaction" Role="RecurringTransaction" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="AspNetUser">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="RecurringTransaction">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_JournalEntry_Currency">
+          <End Type="ChokinModel.Currency" Role="Currency" Multiplicity="1" />
+          <End Type="ChokinModel.JournalEntry" Role="JournalEntry" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Currency">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="JournalEntry">
+              <PropertyRef Name="CurrencyId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_RecurringTransaction_Currency">
+          <End Type="ChokinModel.Currency" Role="Currency" Multiplicity="1" />
+          <End Type="ChokinModel.RecurringTransaction" Role="RecurringTransaction" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Currency">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="RecurringTransaction">
+              <PropertyRef Name="CurrencyId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="Chokin_DEVModelStoreContainer" CdmEntityContainer="ChokinEntities">
-          <EntitySetMapping Name="Accounts">
-            <EntityTypeMapping TypeName="ChokinModel.Account">
-              <MappingFragment StoreEntitySet="Account">
-                <ScalarProperty Name="Id" ColumnName="Id" />
-                <ScalarProperty Name="TypeId" ColumnName="TypeId" />
-                <ScalarProperty Name="CurrencyId" ColumnName="CurrencyId" />
-                <ScalarProperty Name="UserId" ColumnName="UserId" />
-                <ScalarProperty Name="Name" ColumnName="Name" />
-                <ScalarProperty Name="Description" ColumnName="Description" />
-                <ScalarProperty Name="Debit" ColumnName="Debit" />
-                <ScalarProperty Name="Credit" ColumnName="Credit" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Currencies">
-            <EntityTypeMapping TypeName="ChokinModel.Currency">
-              <MappingFragment StoreEntitySet="Currency">
-                <ScalarProperty Name="Id" ColumnName="Id" />
-                <ScalarProperty Name="Name" ColumnName="Name" />
-                <ScalarProperty Name="Symbol" ColumnName="Symbol" />
-                <ScalarProperty Name="Country" ColumnName="Country" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="JournalEntries">
-            <EntityTypeMapping TypeName="ChokinModel.JournalEntry">
-              <MappingFragment StoreEntitySet="JournalEntry">
-                <ScalarProperty Name="Id" ColumnName="Id" />
-                <ScalarProperty Name="Amount" ColumnName="Amount" />
-                <ScalarProperty Name="Date" ColumnName="Date" />
-                <ScalarProperty Name="Concept" ColumnName="Concept" />
-                <ScalarProperty Name="DebitAccountId" ColumnName="DebitAccountId" />
-                <ScalarProperty Name="CreditAccountId" ColumnName="CreditAccountId" />
-                <ScalarProperty Name="CurrencyId" ColumnName="CurrencyId" />
-                <ScalarProperty Name="UserId" ColumnName="UserId" />
-                <ScalarProperty Name="IsRecurring" ColumnName="IsRecurring" />
-                <ScalarProperty Name="IsCancelling" ColumnName="IsCancelling" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="RecurringTransactions">
-            <EntityTypeMapping TypeName="ChokinModel.RecurringTransaction">
-              <MappingFragment StoreEntitySet="RecurringTransaction">
-                <ScalarProperty Name="Id" ColumnName="Id" />
-                <ScalarProperty Name="Name" ColumnName="Name" />
-                <ScalarProperty Name="Concept" ColumnName="Concept" />
-                <ScalarProperty Name="Amount" ColumnName="Amount" />
-                <ScalarProperty Name="DebitAccountId" ColumnName="DebitAccountId" />
-                <ScalarProperty Name="CreditAcountId" ColumnName="CreditAcountId" />
-                <ScalarProperty Name="DayMonth" ColumnName="DayMonth" />
-                <ScalarProperty Name="Active" ColumnName="Active" />
-                <ScalarProperty Name="UserId" ColumnName="UserId" />
-                <ScalarProperty Name="CurrencyId" ColumnName="CurrencyId" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="AspNetRoles">
             <EntityTypeMapping TypeName="ChokinModel.AspNetRole">
               <MappingFragment StoreEntitySet="AspNetRoles">
@@ -700,6 +749,62 @@
               <ScalarProperty Name="Id" ColumnName="RoleId" />
             </EndProperty>
           </AssociationSetMapping>
+          <EntitySetMapping Name="Accounts">
+            <EntityTypeMapping TypeName="ChokinModel.Account">
+              <MappingFragment StoreEntitySet="Account">
+                <ScalarProperty Name="Credit" ColumnName="Credit" />
+                <ScalarProperty Name="Debit" ColumnName="Debit" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="CurrencyId" ColumnName="CurrencyId" />
+                <ScalarProperty Name="TypeId" ColumnName="TypeId" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Currencies">
+            <EntityTypeMapping TypeName="ChokinModel.Currency">
+              <MappingFragment StoreEntitySet="Currency">
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="Symbol" ColumnName="Symbol" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="JournalEntries">
+            <EntityTypeMapping TypeName="ChokinModel.JournalEntry">
+              <MappingFragment StoreEntitySet="JournalEntry">
+                <ScalarProperty Name="IsCancelling" ColumnName="IsCancelling" />
+                <ScalarProperty Name="IsRecurring" ColumnName="IsRecurring" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="CurrencyId" ColumnName="CurrencyId" />
+                <ScalarProperty Name="CreditAccountId" ColumnName="CreditAccountId" />
+                <ScalarProperty Name="DebitAccountId" ColumnName="DebitAccountId" />
+                <ScalarProperty Name="Concept" ColumnName="Concept" />
+                <ScalarProperty Name="Date" ColumnName="Date" />
+                <ScalarProperty Name="Amount" ColumnName="Amount" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="RecurringTransactions">
+            <EntityTypeMapping TypeName="ChokinModel.RecurringTransaction">
+              <MappingFragment StoreEntitySet="RecurringTransaction">
+                <ScalarProperty Name="CurrencyId" ColumnName="CurrencyId" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="Active" ColumnName="Active" />
+                <ScalarProperty Name="DayMonth" ColumnName="DayMonth" />
+                <ScalarProperty Name="CreditAcountId" ColumnName="CreditAcountId" />
+                <ScalarProperty Name="DebitAccountId" ColumnName="DebitAccountId" />
+                <ScalarProperty Name="Amount" ColumnName="Amount" />
+                <ScalarProperty Name="Concept" ColumnName="Concept" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

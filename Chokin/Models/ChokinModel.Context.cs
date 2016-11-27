@@ -25,13 +25,13 @@ namespace Chokin.Models
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<Account> Accounts { get; set; }
-        public virtual DbSet<Currency> Currencies { get; set; }
-        public virtual DbSet<JournalEntry> JournalEntries { get; set; }
-        public virtual DbSet<RecurringTransaction> RecurringTransactions { get; set; }
         public virtual DbSet<AspNetRole> AspNetRoles { get; set; }
         public virtual DbSet<AspNetUserClaim> AspNetUserClaims { get; set; }
         public virtual DbSet<AspNetUserLogin> AspNetUserLogins { get; set; }
         public virtual DbSet<AspNetUser> AspNetUsers { get; set; }
+        public virtual DbSet<Account> Accounts { get; set; }
+        public virtual DbSet<Currency> Currencies { get; set; }
+        public virtual DbSet<JournalEntry> JournalEntries { get; set; }
+        public virtual DbSet<RecurringTransaction> RecurringTransactions { get; set; }
     }
 }

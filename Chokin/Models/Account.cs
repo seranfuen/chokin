@@ -17,29 +17,30 @@ namespace Chokin.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Account()
         {
-            this.CreditEntries = new HashSet<JournalEntry>();
-            this.DebitEntries = new HashSet<JournalEntry>();
-            this.RecurringCredits = new HashSet<RecurringTransaction>();
-            this.RecurringDebits = new HashSet<RecurringTransaction>();
+            this.JournalEntries = new HashSet<JournalEntry>();
+            this.JournalEntries1 = new HashSet<JournalEntry>();
+            this.RecurringTransactions = new HashSet<RecurringTransaction>();
+            this.RecurringTransactions1 = new HashSet<RecurringTransaction>();
         }
     
         public int Id { get; set; }
         public int TypeId { get; set; }
         public int CurrencyId { get; set; }
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public decimal Debit { get; set; }
         public decimal Credit { get; set; }
     
+        public virtual AspNetUser AspNetUser { get; set; }
         public virtual Currency Currency { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<JournalEntry> CreditEntries { get; set; }
+        public virtual ICollection<JournalEntry> JournalEntries { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<JournalEntry> DebitEntries { get; set; }
+        public virtual ICollection<JournalEntry> JournalEntries1 { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<RecurringTransaction> RecurringCredits { get; set; }
+        public virtual ICollection<RecurringTransaction> RecurringTransactions { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<RecurringTransaction> RecurringDebits { get; set; }
+        public virtual ICollection<RecurringTransaction> RecurringTransactions1 { get; set; }
     }
 }
