@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using Microsoft.AspNet.Identity;
 using Chokin.Models;
 
 namespace Chokin.Controllers
@@ -49,16 +50,18 @@ namespace Chokin.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,TypeId,CurrencyId,UserId,Name,Description,Debit,Credit")] Account account)
+        public ActionResult Create([Bind(Include = "Id,TypeId,CurrencyId,Name,Description,Debit,Credit")] Account account)
         {
             if (ModelState.IsValid)
             {
+                account.UserId = User.Identity.GetUserId();
                 db.Accounts.Add(account);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
             ViewBag.CurrencyId = new SelectList(db.Currencies, "Id", "Name", account.CurrencyId);
+            ViewBag.TypeId = new SelectList(AccountType.AccountTypes, "Id", "Name");
             return View(account);
         }
 

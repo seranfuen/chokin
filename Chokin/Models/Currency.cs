@@ -14,24 +14,9 @@ namespace Chokin.Models
     
     public partial class Currency
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Currency()
-        {
-            this.Accounts = new HashSet<Account>();
-            this.JournalEntries = new HashSet<JournalEntry>();
-            this.RecurringTransactions = new HashSet<RecurringTransaction>();
-        }
-    
         public int Id { get; set; }
         public string Name { get; set; }
         public string Symbol { get; set; }
         public string Country { get; set; }
-    
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Account> Accounts { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<JournalEntry> JournalEntries { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<RecurringTransaction> RecurringTransactions { get; set; }
     }
 }

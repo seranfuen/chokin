@@ -12,9 +12,9 @@
         <AssociationConnector Association="ChokinModel.FK_dbo_AspNetUserClaims_dbo_AspNetUsers_UserId" />
         <AssociationConnector Association="ChokinModel.FK_dbo_AspNetUserLogins_dbo_AspNetUsers_UserId" />
         <AssociationConnector Association="ChokinModel.AspNetUserRoles" />
-        <EntityTypeShape EntityType="ChokinModel.Account" Width="1.5" PointX="9.625" PointY="6.625" />
+        <EntityTypeShape EntityType="ChokinModel.Account" Width="1.5" PointX="9.625" PointY="6.625" IsExpanded="true" />
         <EntityTypeShape EntityType="ChokinModel.Currency" Width="1.5" PointX="7.375" PointY="4.125" />
-        <EntityTypeShape EntityType="ChokinModel.JournalEntry" Width="1.5" PointX="11.875" PointY="6.625" />
+        <EntityTypeShape EntityType="ChokinModel.JournalEntry" Width="1.5" PointX="12" PointY="6.625" />
         <EntityTypeShape EntityType="ChokinModel.RecurringTransaction" Width="1.5" PointX="14.875" PointY="6.625" />
         <AssociationConnector Association="ChokinModel.FK_Account_AspNetUsers" />
         <AssociationConnector Association="ChokinModel.FK_Account_Currency" />

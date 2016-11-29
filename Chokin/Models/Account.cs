@@ -14,15 +14,6 @@ namespace Chokin.Models
     
     public partial class Account
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Account()
-        {
-            this.JournalEntries = new HashSet<JournalEntry>();
-            this.JournalEntries1 = new HashSet<JournalEntry>();
-            this.RecurringTransactions = new HashSet<RecurringTransaction>();
-            this.RecurringTransactions1 = new HashSet<RecurringTransaction>();
-        }
-    
         public int Id { get; set; }
         public int TypeId { get; set; }
         public int CurrencyId { get; set; }
@@ -34,13 +25,5 @@ namespace Chokin.Models
     
         public virtual AspNetUser AspNetUser { get; set; }
         public virtual Currency Currency { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<JournalEntry> JournalEntries { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<JournalEntry> JournalEntries1 { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<RecurringTransaction> RecurringTransactions { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<RecurringTransaction> RecurringTransactions1 { get; set; }
     }
 }

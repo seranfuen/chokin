@@ -25,8 +25,8 @@ namespace Chokin.Models
         public string UserId { get; set; }
         public int CurrencyId { get; set; }
     
-        public virtual Account Account { get; set; }
-        public virtual Account Account1 { get; set; }
+        public virtual Account CreditAccount { get; set; }
+        public virtual Account DebitAccount { get; set; }
         public virtual AspNetUser AspNetUser { get; set; }
         public virtual Currency Currency { get; set; }
     }
