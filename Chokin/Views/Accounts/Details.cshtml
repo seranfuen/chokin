@@ -1,7 +1,7 @@
-﻿@model Chokin.Models.Account
+﻿@model Chokin.ViewModels.AccountViewModel
 
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Accounts";
 }
 
 <h2>Details</h2>
@@ -10,22 +10,6 @@
     <h4>Account</h4>
     <hr />
     <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.TypeId)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.TypeId)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.UserId)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.UserId)
-        </dd>
-
         <dt>
             @Html.DisplayNameFor(model => model.Name)
         </dt>
@@ -40,6 +24,14 @@
 
         <dd>
             @Html.DisplayFor(model => model.Description)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.AccountType)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AccountType)
         </dd>
 
         <dt>
@@ -59,11 +51,27 @@
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Currency.Name)
+            @Html.DisplayNameFor(model => model.Balance)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Currency.Name)
+            @Html.DisplayFor(model => model.Balance)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CurrencyName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CurrencyName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.UserName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UserName)
         </dd>
 
     </dl>

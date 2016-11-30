@@ -8,6 +8,7 @@ using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Chokin.Models;
+using Chokin.ViewModels;
 
 namespace Chokin.Controllers
 {
@@ -19,7 +20,8 @@ namespace Chokin.Controllers
         public ActionResult Index()
         {
             var accounts = db.Accounts.Include(a => a.Currency);
-            return View(accounts.ToList());
+            var listAccounts = accounts.ToList();
+            return View(listAccounts.Select(account => new AccountViewModel(account)).ToList());
         }
 
         // GET: Accounts/Details/5
@@ -34,7 +36,7 @@ namespace Chokin.Controllers
             {
                 return HttpNotFound();
             }
-            return View(account);
+            return View(new AccountViewModel(account));
         }
 
         // GET: Accounts/Create

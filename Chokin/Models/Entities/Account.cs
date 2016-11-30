@@ -1,12 +1,15 @@
-﻿using System;
+﻿using Chokin.Models.Entities;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web;
 
 namespace Chokin.Models
 {
-    public partial class Account
+    public partial class Account : ICurrency
     {
+  
         public AccountTypeEnum AccountType
         {
             get
@@ -15,11 +18,20 @@ namespace Chokin.Models
             }
         }
 
+        [DisplayName("Account Type")]
         public string AccountTypeName
         {
             get
             {
                 return AccountType.ToString();
+            }
+        }
+
+        public decimal Balance
+        {
+            get
+            {
+                return Debit - Credit;
             }
         }
     }

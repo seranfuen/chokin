@@ -15,13 +15,13 @@ namespace Chokin.Service
             _context = context;
         }
 
-        public void LogTransaction(JournalEntry entry)
+        public void LogTransaction(JournalEntry journalEntry)
         {
-            var debitAccount = _context.Accounts.Single(account => account.Id == entry.DebitAccountId);
-            var creditAccount = _context.Accounts.Single(account => account.Id == entry.CreditAccountId);
+            var debitAccount = _context.Accounts.Single(account => account.Id == journalEntry.DebitAccountId);
+            var creditAccount = _context.Accounts.Single(account => account.Id == journalEntry.CreditAccountId);
 
-            debitAccount.Debit += entry.Amount;
-            creditAccount.Credit += entry.Amount;
+            debitAccount.Debit += journalEntry.Amount;
+            creditAccount.Credit += journalEntry.Amount;
 
             _context.JournalEntries.Add(journalEntry);
             _context.SaveChanges();
