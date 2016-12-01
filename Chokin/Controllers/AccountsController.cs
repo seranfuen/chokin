@@ -16,7 +16,6 @@ namespace Chokin.Controllers
     {
         private ChokinEntities db = new ChokinEntities();
 
-        // GET: Accounts
         public ActionResult Index()
         {
             var accounts = db.Accounts.Include(a => a.Currency);
@@ -24,7 +23,6 @@ namespace Chokin.Controllers
             return View(listAccounts.Select(account => new AccountViewModel(account)).ToList());
         }
 
-        // GET: Accounts/Details/5
         public ActionResult Details(int? id)
         {
             if (id == null)
@@ -43,28 +41,40 @@ namespace Chokin.Controllers
         public ActionResult Create()
         {
             ViewBag.CurrencyId = new SelectList(db.Currencies, "Id", "Name");
-            ViewBag.TypeId = new SelectList(AccountType.AccountTypes, "Id", "Name");
+            ViewBag.AccountTypeId = new SelectList(AccountType.AccountTypes, "Id", "Name");
             return View();
         }
 
-        // POST: Accounts/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,TypeId,CurrencyId,Name,Description,Debit,Credit")] Account account)
+        public ActionResult Create([Bind(Include = "AccountTypeId,CurrencyId,Name,Description,InitialQuantity")] AccountViewModel accountViewModel)
         {
             if (ModelState.IsValid)
             {
-                account.UserId = User.Identity.GetUserId();
-                db.Accounts.Add(account);
+                var accountEntity = new Account();
+                accountEntity.UserId = User.Identity.GetUserId();
+                accountEntity.CurrencyId = accountViewModel.CurrencyId.Value;
+                accountEntity.TypeId = accountViewModel.AccountTypeId.Value;
+                accountEntity.Name = accountViewModel.Name;
+                accountEntity.Description = accountEntity.Description;
+                if (accountViewModel.InitialQuantity != decimal.Zero)
+                {
+                    if (accountEntity.AccountType == AccountTypeEnum.Asset || accountEntity.AccountType == AccountTypeEnum.Expenses)
+                    {
+                        accountEntity.Debit = accountViewModel.InitialQuantity;
+                    } else
+                    {
+                        accountEntity.Credit = accountViewModel.InitialQuantity;
+                    }
+                }
+                db.Accounts.Add(accountEntity);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
-            ViewBag.CurrencyId = new SelectList(db.Currencies, "Id", "Name", account.CurrencyId);
-            ViewBag.TypeId = new SelectList(AccountType.AccountTypes, "Id", "Name");
-            return View(account);
+            ViewBag.CurrencyId = new SelectList(db.Currencies, "Id", "Name", accountViewModel.CurrencyId);
+            ViewBag.AccountTypeId = new SelectList(AccountType.AccountTypes, "Id", "Name");
+            return View(accountViewModel);
         }
 
         // GET: Accounts/Edit/5
@@ -83,9 +93,6 @@ namespace Chokin.Controllers
             return View(account);
         }
 
-        // POST: Accounts/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "Id,TypeId,CurrencyId,UserId,Name,Description,Debit,Credit")] Account account)
@@ -100,7 +107,6 @@ namespace Chokin.Controllers
             return View(account);
         }
 
-        // GET: Accounts/Delete/5
         public ActionResult Delete(int? id)
         {
             if (id == null)
@@ -112,7 +118,8 @@ namespace Chokin.Controllers
             {
                 return HttpNotFound();
             }
-            return View(account);
+            var accountViewModel = new AccountViewModel(account);
+            return View(accountViewModel);
         }
 
         // POST: Accounts/Delete/5
