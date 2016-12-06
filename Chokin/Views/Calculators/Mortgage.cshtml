@@ -1,0 +1,62 @@
+﻿@{
+    ViewBag.Title = "Mortgage Calculator";
+}
+
+<div class="form-horizontal">
+    <h2>Mortgage Calculator</h2>
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                @Html.Label("Principal", htmlAttributes: new { @class = "control-label col-md-6" })
+                <div class="col-md-6">
+                    <div class="row">
+                        @Html.TextBox("principal", new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                    <div class="row">
+                        <div class="sliderClass " id="principal_input"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Downpayment", htmlAttributes: new { @class = "control-label col-md-6" })
+                <div class="col-md-6">
+                    <div class="row">
+                        <p id="downpayment"></p>
+                    </div>
+                    <div class="row">
+                        <div class="sliderClass " id="downpayment_input"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Interest", htmlAttributes: new { @class = "control-label col-md-6" })
+                <div class="col-md-6">
+                    <div class="row">
+                        <p id="interest"></p>
+                    </div>
+                    <div class="row">
+                        <div class="sliderClass " id="interest_input"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Years", htmlAttributes: new { @class = "control-label col-md-6" })
+                <div class="col-md-6">
+                    <div class="row">
+                        <p id="years"></p>
+                    </div>
+                    <div class="row">
+                        <div class="sliderClass " id="years_input"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="mortgage_result" class="col-sm-8">
+            <p id="monthly_payment"></p>
+        </div>
+    </div>
+</div>
+@section scripts {
+    @Scripts.Render("~/Scripts/app/calculator.js")
+}
