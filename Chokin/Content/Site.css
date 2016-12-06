@@ -31,3 +31,24 @@ textarea {
     margin-bottom: 15px;
     margin-left: 10px;
 }
+
+#mortgage_result {
+    margin-left: 20px;
+}
+
+.table-title {
+    text-align: center;
+    background-color: #337ab7;
+    color: white;
+}
+
+.table-loan td {
+    text-align: right;
+    color: dimgrey;
+    font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+}
+
+#graph_interests {
+    width: 250px;
+    height: 250px;
+}

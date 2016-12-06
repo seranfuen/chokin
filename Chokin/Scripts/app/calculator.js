@@ -1,5 +1,12 @@
 ﻿var CHOKIN_FINANCES =
 {
+    
+    Currency : '€',
+
+    toCurrencyRound : function(value) {
+        return Math.round(value).toLocaleString() + ' €';
+    },
+
     Mortage_Calculator: function (nominal, downpaymentPercentage, interestRate, years) {
         this.Nominal = nominal;
         this.DownpaymentPercentage = downpaymentPercentage;
@@ -9,10 +16,18 @@
         this.MonthlyRate = interestRate / (12 * 100);
         this.Years = years;
 
-        this.getMonthlyPayment = function () {
+        this.getMonthlyPayment = function() {
             // C = Principal / ([1-(1+r)^-n]/r)
             var cap = (1 - Math.pow((1 + this.MonthlyRate), -this.Years * 12)) / this.MonthlyRate;
             return this.Principal / cap;
+        }
+
+        this.getTotalWithInterest = function () {
+            return this.getMonthlyPayment() * this.Years * 12;
+        }
+
+        this.getTotalInterests = function () {
+            return this.getTotalWithInterest() - this.Principal;
         }
 
         this.setPrincipal = function (principal) {
@@ -34,7 +49,54 @@
             this.InterestRate = interest;
             this.MonthlyRate = interest / (12 * 100);
         }
-    }
+    },
+
+    GraphDrawer: function (element, width, height) {
+        this.canvas = element[0];
+        this.canvas.width = this.canvas.clientWidth;
+        this.canvas.height = this.canvas.clientHeight;
+        this.g = this.canvas.getContext('2d');
+
+        this.clear = function () {
+            this.g.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        };
+
+        this.x = 20;
+        this.y = 0;
+
+        this.drawLoanInterest = function (totalWithLoan, principal) {
+            var totalHeight = this.canvas.height - this.y;
+            var totalWidth = 200;
+
+            this.g.fillStyle = '#228B22';
+            this.g.fillRect(this.x, this.y, totalWidth, totalHeight);
+
+            var principalHeight = Math.round(totalHeight * (principal / totalWithLoan));
+            var yPrincipal = this.y + (totalHeight - principalHeight);
+
+            this.g.fillStyle = '#006400';
+            this.g.fillRect(this.x, yPrincipal, totalWidth, principalHeight);
+
+            this.g.strokeStyle = 'black';
+            this.g.lineWidth = 2;
+            this.g.strokeRect(this.x, this.y, totalWidth, totalHeight);
+
+
+            this.g.font = '12pt Arial';
+            this.g.fillStyle = 'white';
+ 
+            this.g.textBaseline = 'middle';
+            this.g.textAlign = "center";
+
+            this.g.fillText('Principal ' + CHOKIN_FINANCES.toCurrencyRound(principal), this.x + totalWidth / 2, yPrincipal + principalHeight / 2 - 10 ); 
+            this.g.fillText(Math.round(100 * principal / totalWithLoan) + '%', this.x + totalWidth / 2, yPrincipal + principalHeight / 2 + 10)
+             
+            var yInterest = Math.max(this.y + 20, (yPrincipal - this.y) / 2 + this.y);
+
+            this.g.fillText('Interest ' + CHOKIN_FINANCES.toCurrencyRound(totalWithLoan - principal), this.x + totalWidth / 2, yInterest - 10);
+            this.g.fillText(Math.round(100 * (1 - (principal / totalWithLoan))) + '%', this.x + totalWidth / 2, yInterest + 10);
+        }
+    },
 };
 
 $(function () {
@@ -44,12 +106,17 @@ $(function () {
     var defaultYears = 30;
 
     var calculator = new CHOKIN_FINANCES.Mortage_Calculator(defaultPrincipal, defaultDownpayment, defaultInterest, defaultYears);
+    var graphDrawer = new CHOKIN_FINANCES.GraphDrawer($('#graph_interests'), 400, 400);
 
     var setSlider = function (setting) {
 
         var onValueChanged = function (event, ui) {
             setting.responseFunction(ui.value);
-            $("#monthly_payment").text(calculator.getMonthlyPayment().toFixed(2) + " € / month");
+            $('#monthly_payment').text(calculator.getMonthlyPayment().toFixed(2) + ' €');
+            $('#total_with_interest').text(Math.round(calculator.getTotalWithInterest()).toLocaleString() + ' €');
+            $('#total_interests').text(Math.round(calculator.getTotalInterests()).toLocaleString() + ' €');
+            $('#total_loan').text(Math.round(calculator.Principal).toLocaleString() + ' €');
+            graphDrawer.drawLoanInterest(calculator.getTotalWithInterest(), calculator.Principal);
         }
 
         $(setting.slider_id).slider(
@@ -117,7 +184,8 @@ $(function () {
                 calculator.Years = value;
                 $('#years').text(value + ' years')
             }
-        }];
+        },
+    ];
 
     for (var i = 0; i < sliderSettings.length; i++) {
         setSlider(sliderSettings[i]);

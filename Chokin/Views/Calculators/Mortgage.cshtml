@@ -52,11 +52,44 @@
                 </div>
             </div>
         </div>
-        <div id="mortgage_result" class="col-sm-8">
-            <p id="monthly_payment"></p>
+        <div class="col-sm-8">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div id="mortgage_result">
+                        <table class="table-hover table-loan table-bordered table-striped table">
+                            <thead>
+                                <tr>
+                                    <th class="table-title" colspan="2">Mortage Summary</th>
+                                </tr>
+                            </thead>
+                            <tr>
+                                <th>Monthly payment</th>
+                                <td><span id="monthly_payment"></span></td>
+                            </tr>
+                            <tr>
+                                <th>Total loan</th>
+                                <td><span id="total_loan"></span></td>
+                            </tr>
+                            <tr>
+                                <th>Total payment</th>
+                                <td><span id="total_with_interest"></span></td>
+                            </tr>
+                            <tr>
+                                <th>Total interests</th>
+                                <td><span id="total_interests"></span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <canvas id="graph_interests" /> 
+                </div>
+            </div>
+            <div class="row">
+
+            </div>
         </div>
     </div>
-</div>
-@section scripts {
-    @Scripts.Render("~/Scripts/app/calculator.js")
-}
+    @section scripts {
+        @Scripts.Render("~/Scripts/app/calculator.js")
+    }
