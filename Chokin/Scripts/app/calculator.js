@@ -1,6 +1,5 @@
 ﻿var CHOKIN_FINANCES =
 {
-    
     Currency : '€',
 
     toCurrencyRound : function(value) {
@@ -68,13 +67,14 @@
             var totalHeight = this.canvas.height - this.y;
             var totalWidth = 200;
 
-            this.g.fillStyle = '#228B22';
+            this.g.fillStyle = '#006400';
             this.g.fillRect(this.x, this.y, totalWidth, totalHeight);
 
             var principalHeight = Math.round(totalHeight * (principal / totalWithLoan));
             var yPrincipal = this.y + (totalHeight - principalHeight);
 
-            this.g.fillStyle = '#006400';
+            
+            this.g.fillStyle = '#228B22';
             this.g.fillRect(this.x, yPrincipal, totalWidth, principalHeight);
 
             this.g.strokeStyle = 'black';

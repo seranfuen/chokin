@@ -5,16 +5,15 @@
 <div class="form-horizontal">
     <h2>Mortgage Calculator</h2>
 
-    <div class="row">
         <div class="col-sm-4">
             <div class="form-group">
-                @Html.Label("Principal", htmlAttributes: new { @class = "control-label col-md-6" })
+                @Html.Label("Principal", new { @class = "control-label col-md-6" })
                 <div class="col-md-6">
                     <div class="row">
-                        @Html.TextBox("principal", new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.TextBox("principal", null, htmlAttributes: new { @class = "form-control" })
                     </div>
                     <div class="row">
-                        <div class="sliderClass " id="principal_input"></div>
+                        <div class="sliderClass" id="principal_input"></div>
                     </div>
                 </div>
             </div>
@@ -82,14 +81,14 @@
                     </div>
                 </div>
                 <div class="col-sm-6">
-                    <canvas id="graph_interests" /> 
+                    <canvas id="graph_interests"></canvas>
                 </div>
             </div>
             <div class="row">
 
             </div>
         </div>
-    </div>
-    @section scripts {
-        @Scripts.Render("~/Scripts/app/calculator.js")
-    }
+</div>
+@section scripts {
+    @Scripts.Render("~/Scripts/app/calculator.js")
+}
