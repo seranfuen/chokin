@@ -52,3 +52,8 @@ textarea {
     width: 250px;
     height: 250px;
 }
+
+#test_canvas {
+    width: 400px;
+    height: 400px;
+}
