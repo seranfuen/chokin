@@ -12,6 +12,7 @@
 /// <reference path="jquery-ui-1.12.1.js" />
 /// <reference path="jquery-ui-1.12.1.min.js" />
 /// <reference path="libs/serfuen.js" />
+/// <reference path="libs/serfuen.off.js" />
 /// <reference path="locales/bootstrap-datepicker.ar.min.js" />
 /// <reference path="locales/bootstrap-datepicker.az.min.js" />
 /// <reference path="locales/bootstrap-datepicker.bg.min.js" />
