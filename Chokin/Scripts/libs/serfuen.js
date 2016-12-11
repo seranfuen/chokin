@@ -73,18 +73,18 @@
         // If Y is positive, it will be offset to the bottom, if negative to the top
         var PIE_CENTER_Y_OFFSET = 0;
 
-        /* The distance from the center as a factor of radius where the percentage text will be drawn
-           if enabled and if it fits inside. Otherwise, will be drawn outside */
-        var DRAW_PERCENTAGE_RADIUS_FACTOR = 0.75;
+        // The largest the factor, the farthest the distance of percentage labels from the circle
+        FONT_SIZE_FACTOR = 1.5;
 
-        var FONT = "14px Arial";
+        var FONT_SIZE = 16;
+        var FONT = "ARIAL";
 
         var CIRCLE_ANGLE = 2 * Math.PI;
 
+        var fontString = FONT_SIZE + "px " + FONT;
         var canvasContext = new canvasContextHelper(canvas);
         var center = new helper.centerPoint(canvas.width, canvas.height, PIE_CENTER_X_OFFSET, PIE_CENTER_Y_OFFSET);
         var radius = Math.min(canvas.width, canvas.height) / 2 - PIE_RADIUS_SUBSTRACT;
-        var drawTextRadius = radius * DRAW_PERCENTAGE_RADIUS_FACTOR;
         var schedule = createPieSectorSchedule();
 
         this.drawPieChart = function () {
@@ -96,7 +96,7 @@
                 drawPieSector(sector.color, sector.startingAngle, sector.finishingAngle);
             }
 
-            if (pieChartSettings.sectorLineColor) {
+            if (pieChartSettings.sectorLineColor && schedule.length > 1) {
                 for (i = 0, len = schedule.length; i < len; i++) {
                     sector = schedule[i];
                     drawPieSectorDividingLine(pieChartSettings.sectorLineColor, pieChartSettings.sectorLineWidth, sector.finishingAngle);
@@ -112,7 +112,10 @@
                     sector = schedule[i];
                     var text = Math.round(sector.percentage) + "%";
                     var textSize = canvasContext.getTextSize(FONT, text);
-                    var widthAvailable = getAvailableWidth(sector.getBisectingWidth(drawTextRadius));
+                   
+                    var relativePoint = center.getRelativePosition(Math.cos(sector.bisectingAngle) * (radius + FONT_SIZE * FONT_SIZE_FACTOR), Math.sin(sector.bisectingAngle) * (radius + FONT_SIZE * FONT_SIZE_FACTOR));
+                    drawText(fontString, 'black', Math.round(sector.percentage) + "%", relativePoint);
+                    
                 }
             }
         };
@@ -188,6 +191,16 @@
             context.beginPath();
             context.arc(center.x, center.y, radius, 0, 2 * Math.PI);
             context.stroke();
+        }
+
+        function drawText(font, color, text, position) {
+            var context = canvasContext.context;
+            context.moveTo(center.x, center.y);
+            context.fillStyle = color;
+            context.textAlign = 'center';
+            context.textBaseline = "middle";
+            context.font = font;
+            context.fillText(text, position.x, position.y);
         }
     };
 
