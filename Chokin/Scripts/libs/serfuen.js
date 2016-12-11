@@ -2,22 +2,11 @@
 
     var version = "0.0.1";
 
-    var helper = (function() {
-        // Given an array x, get the sum of the values returned by mapping each item in the array with function f
-        this.sumMap = function (array, f) {
-            if (array === undefined) {
-                return 0;
-            } else {
-                var total = 0;
-                for (var i = 0; i < array.length; i++) {
-                    total += f(array[i]);
-                }
-                return total;
-            }
-        };
-
+    var helper = (function () {
+        var helper = {};
+        
         /* A point in the center of a rectangular space defined by its width and height */
-        this.centerPoint = function (width, height, xOffset, yOffset) {
+        helper.centerPoint = function (width, height, xOffset, yOffset) {
             this.x = width / 2 + xOffset;
             this.y = height / 2 + yOffset;
 
@@ -29,9 +18,7 @@
                 };
             };
         };
-        
-        return this;
-
+        return helper;
     }());
 
     /* Helper function that holds the context for a canvas, fixes its width and height */
@@ -45,20 +32,32 @@
         this.clearContext = function () {
             this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         };
+
+        this.getTextSize = function(font, text) {
+            this.context.font = font;
+            return this.context.measureText(text);
+        };
+
     }
 
     var createPieChartSettings = function (chartData) {
         this.data = chartData || [];
         /* The numeric total represented by the data given */
-        this.total = helper.sumMap(this.data, function (x) { return x.value; });
+        this.total = chartData.map(function (x) { return x.value; }).reduce(function (x, y) { return x + y; });
+
+        this.showPercentageInSectors = true;
+
+        // APPEARANCE
+
         /* Color palette, contiguous colors including last and first in the list should be distinct from one another */
         this.colorPalette = ["gray", "blue", "orange", "green", "pink", "brown", "purple", "yellow", "red"];
-        /* Animation speed in milliseconds when displaying the pie chart. Set to 0 to disable the animation */
-        this.animationSpeed = 1500;
-        this.sectorLineColor = "Aquamarine";
+        this.sectorLineColor = "LightGray";
         this.sectorLineWidth = 2;
         this.circleLineColor = "black";
         this.circleLineWidth = 2;
+
+        /* Animation speed in milliseconds when displaying the pie chart. Set to 0 to disable the animation */
+        this.animationSpeed = 1500;
         
     };
 
@@ -74,23 +73,32 @@
         // If Y is positive, it will be offset to the bottom, if negative to the top
         var PIE_CENTER_Y_OFFSET = 0;
 
+        /* The distance from the center as a factor of radius where the percentage text will be drawn
+           if enabled and if it fits inside. Otherwise, will be drawn outside */
+        var DRAW_PERCENTAGE_RADIUS_FACTOR = 0.75;
+
+        var FONT = "14px Arial";
+
         var CIRCLE_ANGLE = 2 * Math.PI;
 
         var canvasContext = new canvasContextHelper(canvas);
         var center = new helper.centerPoint(canvas.width, canvas.height, PIE_CENTER_X_OFFSET, PIE_CENTER_Y_OFFSET);
         var radius = Math.min(canvas.width, canvas.height) / 2 - PIE_RADIUS_SUBSTRACT;
+        var drawTextRadius = radius * DRAW_PERCENTAGE_RADIUS_FACTOR;
         var schedule = createPieSectorSchedule();
 
         this.drawPieChart = function () {
             canvasContext.clearContext();
-            for (var i = 0, len = schedule.length; i < len; i++) {
-                var sector = schedule[i];
+            var i, len, sector;
+
+            for (i = 0, len = schedule.length; i < len; i++) {
+                sector = schedule[i];
                 drawPieSector(sector.color, sector.startingAngle, sector.finishingAngle);
             }
 
             if (pieChartSettings.sectorLineColor) {
-                for (var i = 0, len = schedule.length; i < len; i++) {
-                    var sector = schedule[i];
+                for (i = 0, len = schedule.length; i < len; i++) {
+                    sector = schedule[i];
                     drawPieSectorDividingLine(pieChartSettings.sectorLineColor, pieChartSettings.sectorLineWidth, sector.finishingAngle);
                 }
             }
@@ -98,27 +106,45 @@
             if (pieChartSettings.circleLineColor) {
                 drawCircle(pieChartSettings.circleLineColor, pieChartSettings.circleLineWidth);
             }
+
+            if (pieChartSettings.showPercentageInSectors) {
+                for (i = 0, len = schedule.length; i < len; i++) {
+                    sector = schedule[i];
+                    var text = Math.round(sector.percentage) + "%";
+                    var textSize = canvasContext.getTextSize(FONT, text);
+                    var widthAvailable = getAvailableWidth(sector.getBisectingWidth(drawTextRadius));
+                }
+            }
         };
 
         function getColor(index) {
             return pieChartSettings.colorPalette[index % pieChartSettings.colorPalette.length];
         }
 
+        function getSectorSchedule(data, accumulatedAngle, sectorAngle, value, color) {
+            return {
+                startingAngle: accumulatedAngle,
+                finishingAngle: Math.min(CIRCLE_ANGLE, sectorAngle + accumulatedAngle),
+                angle: sectorAngle,
+                value: value,
+                color: color,
+                bisectingAngle: (sectorAngle / 2) + accumulatedAngle,
+                percentage: (value / pieChartSettings.total) * 100,
+                getBisectingWidth: function (radius) {
+                    return Math.sin(sectorAngle / 2) * radius;
+                }
+            };
+        }
+
         function createPieSectorSchedule() {
             var pieChartData = pieChartSettings.data;
             var schedule = [];
             var currentAngle = 0;
-
-            for (var i = 0, len = pieChartData.length; i < len; i++) {
+            
+            var i, len;
+            for (i = 0, len = pieChartData.length; i < len; i++) {
                 var angle = pieChartData[i].value * (CIRCLE_ANGLE / pieChartSettings.total);
-
-                schedule[i] = {
-                    startingAngle : currentAngle,
-                    finishingAngle: Math.min(CIRCLE_ANGLE, angle + currentAngle),
-                    angle : angle,
-                    value : pieChartData[i].value,
-                    color : getColor(i)
-                };
+                schedule[i] = getSectorSchedule(pieChartData, currentAngle, angle, pieChartData[i].value, getColor(i));
                 currentAngle += schedule[i].angle;
             }
 
@@ -128,6 +154,10 @@
             }
 
             return schedule;
+        }
+
+        function getAvailableWidth(bisectingWidth) {
+            return Math.round(bisectingWidth) - (pieChartSettings.sectorLineWidth || 0) - 2;
         }
 
         function drawPieSector(color, startingAngle, finishingAngle) {
@@ -143,7 +173,7 @@
             var context = canvasContext.context;
             context.strokeStyle = color;
             context.lineWidth = lineWidth;
-            context.lineCap="round";
+            context.lineCap = "round";
             context.beginPath();
             context.moveTo(center.x, center.y);
             var position = center.getRelativePosition(Math.cos(angle) * radius, Math.sin(angle) * radius);
