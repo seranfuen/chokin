@@ -6,7 +6,7 @@
         var helper = {};
 
         /* A point in the center of a rectangular space defined by its width and height */
-        helper.centerPoint = function (width, height, xOffset, yOffset) {
+        helper.CenterPoint = function (width, height, xOffset, yOffset) {
             this.x = width / 2 + xOffset;
             this.y = height / 2 + yOffset;
 
@@ -18,57 +18,57 @@
                 };
             };
         };
+
+        // Allows to manage a canvas status, clear it while keeping a coordinate translation, etc.
+        helper.CanvasContextHelper = function(canvas) {
+            this.canvas = canvas;
+            this.context = this.canvas.getContext("2d");
+            this.canvas.width = this.canvas.clientWidth;
+            this.canvas.height = this.canvas.clientHeight;
+            this.origin = { x: 0, y: 0 };
+
+            // empties the canvas
+            this.clearContext = function () {
+                this.context.translate(-this.origin.x, -this.origin.y);
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.context.translate(this.origin.x, this.origin.y);
+            };
+
+            this.getTextSize = function (font, text) {
+                this.context.font = font;
+                return this.context.measureText(text);
+            };
+
+            this.changeOrigin = function (x, y) {
+                this.origin = {
+                    x: x,
+                    y: y
+                };
+                this.context.translate(x, y);
+            }
+        }
+
         return helper;
     }());
 
-    /* Helper function that holds the context for a canvas, fixes its width and height */
-    function canvasContextHelper(canvas) {
-        this.canvas = canvas;
-        this.context = this.canvas.getContext("2d");
-        this.canvas.width = this.canvas.clientWidth;
-        this.canvas.height = this.canvas.clientHeight;
-        this.origin = { x: 0, y: 0 };
-
-        // empties the canvas
-        this.clearContext = function () {
-            this.context.translate(-this.origin.x, -this.origin.y);
-            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.context.translate(this.origin.x, this.origin.y);
-        };
-
-        this.getTextSize = function(font, text) {
-            this.context.font = font;
-            return this.context.measureText(text);
-        };
-
-        this.changeOrigin = function (x, y) {
-            this.origin = {
-                x: x,
-                y: y
-            };
-            this.context.translate(x, y);
-        }
-    }
-
+    // Create a template for the pie chart settings
+    // The chart data is an array of objects with the following properties
+    // value: the numeric value that represents a piece of data out of the total data being charted
+    // valueFormatted: if provided, this will be shown instead of value
+    // name: the name or description of the value
     var createPieChartSettings = function (chartData) {
         this.data = chartData || [];
-        /* The numeric total represented by the data given */
-        this.total = chartData.map(function (x) { return x.value; }).reduce(function (x, y) { return x + y; });
-
-        this.showPercentageInSectors = true;
+        this.total = chartData.map(function (x) { return x.value; }).reduce(function (x, y) { return x + y; }); // the sum of all sectors
+        
+        this.showPercentageInSectors = true; // show the percentage next to the sectors
+        this.showCaptionLocation = "right"; // show a caption box if defined as right, top, bottom or left. If undefined or value unknown, no caption will be shown
 
         // APPEARANCE
-
-        /* Color palette, contiguous colors including last and first in the list should be distinct from one another */
-        this.colorPalette = ["gray", "blue", "orange", "green", "pink", "brown", "purple", "yellow", "red"];
-        this.sectorLineColor = "LightGray";
-        this.sectorLineWidth = 2;
-        this.circleLineColor = "black";
-        this.circleLineWidth = 2;
-
-        /* Animation speed in milliseconds when displaying the pie chart. Set to 0 to disable the animation */
-        this.animationSpeed = 1500;
-
+        this.colorPalette = ["gray", "blue", "orange", "green", "pink", "brown", "purple", "yellow", "red"]; // color palette, colors will repeat if more values than colors
+        this.sectorLineColor = "LightGray"; // the color of the line separating sectors. If not defined, no line will be drawn
+        this.sectorLineWidth = 2; // thickness of line separating sectors
+        this.circleLineColor = "black"; // the color of the circle. If not defined, no line will be drawn
+        this.circleLineWidth = 2; // thicness of the circle
     };
 
     var pieChart = function(canvas, pieChartSettings) {
@@ -86,7 +86,7 @@
         var FONT = "ARIAL"; // font name
         var fontString = FONT_SIZE + "px " + FONT;
 
-        var canvasContext = new canvasContextHelper(canvas);
+        var canvasContext = new helper.CanvasContextHelper(canvas);
         var radius = Math.min(canvas.width, canvas.height) / 2 - PIE_RADIUS_SUBSTRACT;
         var schedule = createPieSectorSchedule();
         var mouseLastMoved = 0;
@@ -168,8 +168,14 @@
 
         });
 
+        function getCaptions() {
+            return pieChartSettings.chartData.map(function (value) {
+                return value.name + " - " + value.valueFormatted;
+            });
+        }
+
         function setContextOrigin() {
-            var center = new helper.centerPoint(canvas.width, canvas.height, PIE_CENTER_X_OFFSET, PIE_CENTER_Y_OFFSET);
+            var center = new helper.CenterPoint(canvas.width, canvas.height, PIE_CENTER_X_OFFSET, PIE_CENTER_Y_OFFSET);
             canvasContext.changeOrigin(center.x, center.y);
         }
 
@@ -279,12 +285,21 @@
 
     return {
         // We export a helper function that allows retrieving a default settings object for the pie, with the data passed by the caller
-        getPieChartSettings: createPieChartSettings
+        getPieChartSettings: createPieChartSettings,
+        helper : helper
     };
 }());
 
 $(function () {
-    var data = [{ value: 75 }, { value: 25 }, { value: 10 }, { value: 33 }, { value: 66 }, { value: 10 }, { value: 45 }, { value: 90 }, { value: 30 }, { value: 41 }];
+    var data =
+       [{ value: 46, valueFormatted: "46 million", name: "Spain" },
+        { value: 80, valueFormatted: "80 million", name: "Germany" },
+        { value: 66, valueFormatted: "66 million", name: "France" },
+        { value: 64, valueFormatted: "64 million", name: "United Kingdom" },
+        { value: 38, valueFormatted: "38 million", name: "Poland" },
+        { value: 17, valueFormatted: "17 million", name: "Netherlands" },
+        { value: 11, valueFormatted: "11 million", name: "Belgium" },
+        { value: 10, valueFormatted: "10 million", name: "Portugal" }];
     var settings = new SERFUEN.getPieChartSettings(data);
     settings.animationSpeed = 1000;
     $('#test_canvas').pieChart(settings);
