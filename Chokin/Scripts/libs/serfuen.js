@@ -36,7 +36,7 @@
 
             this.getTextSize = function (font, text) {
                 this.context.font = font;
-                return this.context.measureText(text);
+                return this.context.measureText(text).width;
             };
 
             this.changeOrigin = function (x, y) {
@@ -69,6 +69,11 @@
         this.sectorLineWidth = 2; // thickness of line separating sectors
         this.circleLineColor = "black"; // the color of the circle. If not defined, no line will be drawn
         this.circleLineWidth = 2; // thicness of the circle
+
+        this.hasCaption = function () {
+            var caption = (this.showCaptionLocation || "").toUpperCase();
+            return caption == "RIGHT" || caption == "LEFT" || caption == "TOP" || caption == "BOTTOM";
+        }
     };
 
     var pieChart = function(canvas, pieChartSettings) {
@@ -76,23 +81,64 @@
         var self = this;
 
         var CIRCLE_ANGLE = 2 * Math.PI;
-        var PIE_RADIUS_SUBSTRACT = 50; // Pixels to substract from the radius, the original radius being half the width/height (whichever is smaller) of the canvas
-        var PIE_CENTER_X_OFFSET = 0;   // If X is positive, the pie will be offset to the right of the center of the canvas
+        var PIE_RADIUS_RATIO = 0.85; // Percentage of the total width/height (whichever is smaller) that will be used for the caption, if enabled
+        var MAX_CAPTION_WIDTH_RATIO = 0.5; // The pie will be shrunk up to this ratio of its maximum possible size to make room for the caption. If some caption is wider, it will be clipped
         var PIE_CENTER_Y_OFFSET = 0;  // If Y is positive, it will be offset to the bottom of the center of the canvas
 
         var SHOW_TOOLTIP_AFTER_HOVER_MS = 1500; // Number of ms that must elapse to show the tooltip over a sector indicating value, percentage and name
         var FONT_SIZE_FACTOR = 1.5; // The largest the font size, the farthest the distance (by this factor) from the pie circle
         var FONT_SIZE = 16; // font size in pixels
         var FONT = "ARIAL"; // font name
+        var PERCENTAGE_CAPTION_DISTANCE = 5; // distance in pixels between the pie chart and the caption showing the percentage
+
         var fontString = FONT_SIZE + "px " + FONT;
 
         var canvasContext = new helper.CanvasContextHelper(canvas);
-        var radius = Math.min(canvas.width, canvas.height) / 2 - PIE_RADIUS_SUBSTRACT;
+        var contextData = getContextData();
+      
         var schedule = createPieSectorSchedule();
         var mouseLastMoved = 0;
         var currentSector = null;
 
         setContextOrigin();
+
+        function getContextData() {
+            var workingSize = Math.min(canvas.width, canvas.height);
+            var maxTextWidth = canvasContext.getTextSize(fontString, "100%");
+            var maxTextHeight = FONT_SIZE + 6;
+
+            var pieWorkingSize = workingSize * (pieChartSettings.hasCaption() ? PIE_RADIUS_RATIO : 1);
+            var pieWorkingWidth = pieWorkingSize - 2 * (PERCENTAGE_CAPTION_DISTANCE + maxTextWidth);
+            var pieWorkingHeight = pieWorkingSize - 2 * (PERCENTAGE_CAPTION_DISTANCE + maxTextHeight);
+
+            var radius = Math.min(pieWorkingWidth, pieWorkingHeight) / 2;
+            var xOffset = getXOffset(workingSize, radius);
+
+            return {
+                workingSize: workingSize,
+                maxTextWidth: maxTextWidth,
+                maxTextHeight: maxTextHeight,
+                pieWorkingSize: workingSize,
+                radius: radius,
+                xOffset: xOffset
+            };
+        }
+
+        function getXOffset(workingSize, radius) {
+            if (!pieChartSettings.hasCaption()) {
+                return 0;
+            } else {
+                var captionWorkingSize = (workingSize * (1 - PIE_RADIUS_RATIO));
+                var xSurplus = canvas.width > canvas.height ? (canvas.width - canvas.height) : 0;
+                if (pieChartSettings.showCaptionLocation.toUpperCase() == "RIGHT") {
+                    return -(captionWorkingSize + xSurplus) / 2;
+                } else if (pieChartSettings.showCaptionLocation.toUpperCase() == "LEFT") {
+                    return (captionWorkingSize + xSurplus) / 2;
+                } else {
+                    return 0;
+                }
+            }
+        }
 
         this.drawPieChart = function () {
             canvasContext.clearContext();
@@ -125,8 +171,8 @@
                     var textSize = canvasContext.getTextSize(FONT, text);
 
                     var point = {
-                        x: Math.cos(sector.bisectingAngle) * (radius + FONT_SIZE * FONT_SIZE_FACTOR),
-                        y: Math.sin(sector.bisectingAngle) * (radius + FONT_SIZE * FONT_SIZE_FACTOR)
+                        x: Math.cos(sector.bisectingAngle) * ((contextData.radius + contextData.maxTextWidth / 2) + PERCENTAGE_CAPTION_DISTANCE),
+                        y: Math.sin(sector.bisectingAngle) * ((contextData.radius + contextData.maxTextHeight / 2) + PERCENTAGE_CAPTION_DISTANCE)
                     };
                     drawText(fontString, 'black', Math.round(sector.percentage) + "%", point);
                 }
@@ -175,7 +221,7 @@
         }
 
         function setContextOrigin() {
-            var center = new helper.CenterPoint(canvas.width, canvas.height, PIE_CENTER_X_OFFSET, PIE_CENTER_Y_OFFSET);
+            var center = new helper.CenterPoint(canvas.width, canvas.height, contextData.xOffset, PIE_CENTER_Y_OFFSET);
             canvasContext.changeOrigin(center.x, center.y);
         }
 
@@ -183,10 +229,10 @@
             var ctx = canvasContext.context;
             ctx.beginPath();
             ctx.moveTo(0, 0);
-            ctx.lineTo(Math.cos(sector.startingAngle) * radius, Math.sin(sector.startingAngle) * radius);
-            ctx.arc(0, 0, radius, sector.startingAngle, sector.finishingAngle);
+            ctx.lineTo(Math.cos(sector.startingAngle) * contextData.radius, Math.sin(sector.startingAngle) * contextData.radius);
+            ctx.arc(0, 0, contextData.radius, sector.startingAngle, sector.finishingAngle);
             ctx.moveTo(0, 0);
-            ctx.lineTo(Math.cos(sector.finishingAngle) * radius, Math.sin(sector.finishingAngle) * radius);
+            ctx.lineTo(Math.cos(sector.finishingAngle) * contextData.radius, Math.sin(sector.finishingAngle) * contextData.radius);
 
             return ctx.isPointInPath(point.x, point.y);
         }
@@ -240,7 +286,7 @@
             context.fillStyle = color;
             context.beginPath();
             context.moveTo(0, 0);
-            context.arc(0, 0, radius, startingAngle, finishingAngle);
+            context.arc(0, 0, contextData.radius, startingAngle, finishingAngle);
             context.fill();
         }
 
@@ -251,7 +297,7 @@
             context.lineCap = "round";
             context.beginPath();
             context.moveTo(0, 0);
-            context.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+            context.lineTo(Math.cos(angle) * contextData.radius, Math.sin(angle) * contextData.radius);
             context.stroke();
         }
 
@@ -260,7 +306,7 @@
             context.strokeStyle = color;
             context.lineWidth = strokeWidth;
             context.beginPath();
-            context.arc(0, 0, radius, 0, 2 * Math.PI);
+            context.arc(0, 0, contextData.radius, 0, 2 * Math.PI);
             context.stroke();
         }
 
@@ -301,6 +347,7 @@ $(function () {
         { value: 11, valueFormatted: "11 million", name: "Belgium" },
         { value: 10, valueFormatted: "10 million", name: "Portugal" }];
     var settings = new SERFUEN.getPieChartSettings(data);
+    settings.showCaptionLocation = "right";
     settings.animationSpeed = 1000;
     $('#test_canvas').pieChart(settings);
 });
