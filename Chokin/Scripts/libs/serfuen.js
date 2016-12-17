@@ -1,4 +1,33 @@
-﻿var SERFUEN = (function () {
+﻿/* 
+
+Copyright 2016, Sergio Ángel Verbo, All rights reserved.
+Contact at seranfuen@gmail.com
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+/* TODO: 
+ * 
+ * 1. The pie should be rotated so that the first sector's bisection has an angle of 0 (the first sector is pointing upwards)
+ * 
+ * 2. When hovering over a sector, display it's info as a tooltip box
+ * 
+ */
+
+
+var SERFUEN = (function () {
 
     var version = "0.0.1";
 
@@ -29,9 +58,8 @@
 
             // empties the canvas
             this.clearContext = function () {
-                this.context.translate(-this.origin.x, -this.origin.y);
+                this.restoreOrigin();
                 this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.context.translate(this.origin.x, this.origin.y);
             };
 
             this.getTextSize = function (font, text) {
@@ -45,6 +73,14 @@
                     y: y
                 };
                 this.context.translate(x, y);
+            }
+
+            this.restoreOrigin = function () {
+                this.context.translate(-this.origin.x, -this.origin.y);
+                this.origin = {
+                    x: 0,
+                    y: 0
+                };
             }
         }
 
@@ -70,10 +106,18 @@
         this.circleLineColor = "black"; // the color of the circle. If not defined, no line will be drawn
         this.circleLineWidth = 2; // thicness of the circle
 
-        this.hasCaption = function () {
+        this.showingChartKey = function () {
             var caption = (this.showCaptionLocation || "").toUpperCase();
             return caption == "RIGHT" || caption == "LEFT" || caption == "TOP" || caption == "BOTTOM";
-        }
+        };
+
+        this.showingKeyRight = function () {
+            return this.showCaptionLocation.toUpperCase() == "RIGHT";
+        };
+
+        this.showingKeyLeft = function () {
+            this.showCaptionLocation.toUpperCase() == "LEFT"
+        };
     };
 
     var pieChart = function(canvas, pieChartSettings) {
@@ -84,14 +128,20 @@
         var PIE_RADIUS_RATIO = 0.85; // Percentage of the total width/height (whichever is smaller) that will be used for the caption, if enabled
         var MAX_CAPTION_WIDTH_RATIO = 0.5; // The pie will be shrunk up to this ratio of its maximum possible size to make room for the caption. If some caption is wider, it will be clipped
         var PIE_CENTER_Y_OFFSET = 0;  // If Y is positive, it will be offset to the bottom of the center of the canvas
+        var ANGLE_ROTATE = CIRCLE_ANGLE * (3 / 4);
 
         var SHOW_TOOLTIP_AFTER_HOVER_MS = 1500; // Number of ms that must elapse to show the tooltip over a sector indicating value, percentage and name
-        var FONT_SIZE_FACTOR = 1.5; // The largest the font size, the farthest the distance (by this factor) from the pie circle
-        var FONT_SIZE = 16; // font size in pixels
+        var PERCENTAGE_FONT_SIZE_FACTOR = 1.5; // The largest the font size, the farthest the distance (by this factor) from the pie circle
+        var PERCENTAGE_FONT_SIZE = 16; // font size in pixels
         var FONT = "ARIAL"; // font name
         var PERCENTAGE_CAPTION_DISTANCE = 5; // distance in pixels between the pie chart and the caption showing the percentage
+        var KEY_FONT_SIZE = 14;
+        var KEY_BOX_PADDING = 10; // in pixels
+        var KEY_BOX_LINEWIDTH = 3;
+        var KEY_LINE_HEIGHT_MODIFIER = 1.6; // proportion of the key font size for the line height
 
-        var fontString = FONT_SIZE + "px " + FONT;
+        var percentageFontString = PERCENTAGE_FONT_SIZE + "px " + FONT;
+        var keyFontString = KEY_FONT_SIZE + "px " + FONT;
 
         var canvasContext = new helper.CanvasContextHelper(canvas);
         var contextData = getContextData();
@@ -100,40 +150,62 @@
         var mouseLastMoved = 0;
         var currentSector = null;
 
-        setContextOrigin();
-
         function getContextData() {
-            var workingSize = Math.min(canvas.width, canvas.height);
-            var maxTextWidth = canvasContext.getTextSize(fontString, "100%");
-            var maxTextHeight = FONT_SIZE + 6;
+            var maxTextWidth = canvasContext.getTextSize(percentageFontString, "100%");
+            var maxTextHeight = PERCENTAGE_FONT_SIZE + 6;
+            var longestCaption = getLongestCaption();
+            var longestCaptionWidth = canvasContext.getTextSize("bold " + keyFontString, longestCaption);
+            var keyBoxWidth = Math.min(canvas.width * MAX_CAPTION_WIDTH_RATIO, 2 * KEY_BOX_PADDING + KEY_FONT_SIZE * 2 + longestCaptionWidth + 2 * KEY_BOX_LINEWIDTH); // twice the font size will be the square with the color
 
-            var pieWorkingSize = workingSize * (pieChartSettings.hasCaption() ? PIE_RADIUS_RATIO : 1);
-            var pieWorkingWidth = pieWorkingSize - 2 * (PERCENTAGE_CAPTION_DISTANCE + maxTextWidth);
-            var pieWorkingHeight = pieWorkingSize - 2 * (PERCENTAGE_CAPTION_DISTANCE + maxTextHeight);
+            var availableWidth = canvas.width - (pieChartSettings.showingChartKey() ? keyBoxWidth : 0);
+
+            var pieMaxSize = Math.min(availableWidth, canvas.height);
+            var piepieMaxSize = pieMaxSize * (pieChartSettings.showingChartKey() ? PIE_RADIUS_RATIO : 1);
+            var pieWorkingWidth = piepieMaxSize - 2 * (PERCENTAGE_CAPTION_DISTANCE + maxTextWidth);
+            var pieWorkingHeight = piepieMaxSize - 2 * (PERCENTAGE_CAPTION_DISTANCE + maxTextHeight);
 
             var radius = Math.min(pieWorkingWidth, pieWorkingHeight) / 2;
-            var xOffset = getXOffset(workingSize, radius);
+            var xOffset = getXOffset(pieMaxSize, radius);
 
             return {
-                workingSize: workingSize,
+                pieMaxSize: pieMaxSize,
+                keyBoxWidth : keyBoxWidth,
                 maxTextWidth: maxTextWidth,
                 maxTextHeight: maxTextHeight,
-                pieWorkingSize: workingSize,
+                piepieMaxSize: pieMaxSize,
                 radius: radius,
                 xOffset: xOffset
             };
         }
 
-        function getXOffset(workingSize, radius) {
-            if (!pieChartSettings.hasCaption()) {
+        function getCaptionText(dataSlice) {
+            return dataSlice.name + " - " + (dataSlice.valueFormatted || dataSlice.value);
+        }
+
+        function getLongestCaption() {
+            var widths = pieChartSettings.data.map(function (x) {
+                return getCaptionText(x);
+            });
+            var longestCaption = null;
+            var i = 0, len = widths.length;
+            for (; i < len; i++) {
+                if (!longestCaption || longestCaption.length < widths[i].length) {
+                    longestCaption = widths[i];
+                }
+            }
+            return longestCaption;
+        }
+
+        function getXOffset(pieMaxSize, radius) {
+            if (!pieChartSettings.showingChartKey()) {
                 return 0;
             } else {
-                var captionWorkingSize = (workingSize * (1 - PIE_RADIUS_RATIO));
+                var captionpieMaxSize = (pieMaxSize * (1 - PIE_RADIUS_RATIO));
                 var xSurplus = canvas.width > canvas.height ? (canvas.width - canvas.height) : 0;
-                if (pieChartSettings.showCaptionLocation.toUpperCase() == "RIGHT") {
-                    return -(captionWorkingSize + xSurplus) / 2;
-                } else if (pieChartSettings.showCaptionLocation.toUpperCase() == "LEFT") {
-                    return (captionWorkingSize + xSurplus) / 2;
+                if (pieChartSettings.showingKeyRight()) {
+                    return -(captionpieMaxSize + xSurplus) / 2;
+                } else if (pieChartSettings.showingKeyLeft()) {
+                    return (captionpieMaxSize + xSurplus) / 2;
                 } else {
                     return 0;
                 }
@@ -142,6 +214,7 @@
 
         this.drawPieChart = function () {
             canvasContext.clearContext();
+            setContextOrigin();
             var i, len, sector;
 
             for (i = 0, len = schedule.length; i < len; i++) {
@@ -174,12 +247,92 @@
                         x: Math.cos(sector.bisectingAngle) * ((contextData.radius + contextData.maxTextWidth / 2) + PERCENTAGE_CAPTION_DISTANCE),
                         y: Math.sin(sector.bisectingAngle) * ((contextData.radius + contextData.maxTextHeight / 2) + PERCENTAGE_CAPTION_DISTANCE)
                     };
-                    drawText(fontString, 'black', Math.round(sector.percentage) + "%", point);
+                    drawText(percentageFontString, 'black', Math.round(sector.percentage) + "%", point);
                 }
+            }
+
+            if (pieChartSettings.showingChartKey()) {
+                drawChartKey();
             }
         };
 
+        function drawChartKey() {
+            var settings = getChartKeySettings();
+            canvasContext.restoreOrigin();
+            var captions = getCaptions();
+
+            var i = 0, len = captions.length;
+
+            for (; i < len; i++) {
+                drawChartKeySquare(i, captions[i], settings);
+                drawChartKeyCaption(i, captions[i], settings);
+            }
+
+            drawChartKeyRectangle(settings);
+        }
+
+        function drawChartKeySquare(index, caption, settings) {
+            var y = settings.lineY + index * settings.lineHeight;
+            var x = settings.squareX;
+            var ctx = canvasContext.context;
+            ctx.beginPath();
+            ctx.fillStyle = caption.color;
+            ctx.rect(x, y, KEY_FONT_SIZE, KEY_FONT_SIZE);
+            ctx.fill();
+
+            if (schedule[index] == currentSector) {
+                ctx.strokeStyle = "grey";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        function drawChartKeyCaption(index, caption, settings) {
+            var y = settings.lineY + index * settings.lineHeight;
+            var x = settings.lineX;
+            
+            var font = schedule[index] == currentSector ? "bold " + keyFontString : keyFontString;
+
+            drawText(font, 'black', caption.caption, { x: x, y: y }, "left", "top");
+        }
+
+        function drawChartKeyRectangle(settings) {
+            var ctx = canvasContext.context;
+            ctx.beginPath();
+            ctx.strokeStyle = pieChartSettings.circleLineColor;
+            ctx.lineWidth = KEY_BOX_LINEWIDTH;
+            ctx.rect(settings.boxStartPoint.x, settings.boxStartPoint.y, settings.width, settings.height);
+            ctx.stroke();
+        }
+
+        function getChartKeySettings() {
+            var keyBoxHeight = getBoxHeight();
+            var xPoint = pieChartSettings.showingKeyLeft() ? 0 : canvas.width - contextData.keyBoxWidth - KEY_BOX_LINEWIDTH;
+            var yPoint = (canvas.height - keyBoxHeight) / 2;
+
+            var squareX = xPoint + KEY_BOX_PADDING + KEY_FONT_SIZE / 2;
+            var captionX = squareX + KEY_FONT_SIZE * 1.5;
+
+            function getBoxHeight() {
+                return KEY_FONT_SIZE * KEY_LINE_HEIGHT_MODIFIER * pieChartSettings.data.length + 2 * (KEY_BOX_PADDING + KEY_BOX_LINEWIDTH);
+            }
+
+            return {
+                height : keyBoxHeight,
+                width : contextData.keyBoxWidth,
+                boxStartPoint: {
+                    x : xPoint,
+                    y : yPoint
+                },
+                lineHeight: KEY_FONT_SIZE * KEY_LINE_HEIGHT_MODIFIER,
+                lineX: captionX,
+                lineY: yPoint + KEY_BOX_PADDING + KEY_LINE_HEIGHT_MODIFIER,
+                squareX: squareX
+            };
+        }
+
         $(canvas).mousemove(function (event) {
+            setContextOrigin();
             var rect = this.getBoundingClientRect();
             var point = {
                 x: event.clientX - rect.left,
@@ -215,8 +368,11 @@
         });
 
         function getCaptions() {
-            return pieChartSettings.chartData.map(function (value) {
-                return value.name + " - " + value.valueFormatted;
+            return pieChartSettings.data.map(function (value, index) {
+                return {
+                    caption: value.name + " - " + value.valueFormatted,
+                    color: getColor(index)
+                }
             });
         }
 
@@ -234,7 +390,9 @@
             ctx.moveTo(0, 0);
             ctx.lineTo(Math.cos(sector.finishingAngle) * contextData.radius, Math.sin(sector.finishingAngle) * contextData.radius);
 
-            return ctx.isPointInPath(point.x, point.y);
+            var result = ctx.isPointInPath(point.x, point.y);
+            ctx.closePath();
+            return result;
         }
 
         function getColor(index) {
@@ -310,11 +468,11 @@
             context.stroke();
         }
 
-        function drawText(font, color, text, position) {
+        function drawText(font, color, text, position, textAlign, textBaseline) {
             var context = canvasContext.context;
             context.fillStyle = color;
-            context.textAlign = 'center';
-            context.textBaseline = "middle";
+            context.textAlign =  textAlign || "center";
+            context.textBaseline = textBaseline || "middle";
             context.font = font;
             context.fillText(text, position.x, position.y);
         }
@@ -345,7 +503,14 @@ $(function () {
         { value: 38, valueFormatted: "38 million", name: "Poland" },
         { value: 17, valueFormatted: "17 million", name: "Netherlands" },
         { value: 11, valueFormatted: "11 million", name: "Belgium" },
-        { value: 10, valueFormatted: "10 million", name: "Portugal" }];
+        { value: 10, valueFormatted: "10 million", name: "Portugal" }].sort(function(x, y) {
+            return -(x.value - y.value);
+        });
+
+    var data =
+        [{ value: 25000, valueFormatted: "25.000 €", name: "Dinero invertido" },
+            { value: 35000, valueFormatted: "35.000 €", name: "Dinero en cuenta corriente" }
+        ];
     var settings = new SERFUEN.getPieChartSettings(data);
     settings.showCaptionLocation = "right";
     settings.animationSpeed = 1000;
