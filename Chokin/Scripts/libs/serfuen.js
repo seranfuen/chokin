@@ -1,5 +1,4 @@
 ﻿/* 
-
 Copyright 2016, Sergio Ángel Verbo, All rights reserved.
 Contact at seranfuen@gmail.com
 
@@ -15,15 +14,10 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 */
-
 /* TODO: 
- * 
  * 1. The pie should be rotated so that the first sector's bisection has an angle of 0 (the first sector is pointing upwards)
- * 
  * 2. When hovering over a sector, display it's info as a tooltip box
- * 
  */
 
 
@@ -32,10 +26,10 @@ var SERFUEN = (function () {
     var version = "0.0.1";
 
     var helper = (function () {
-        var helper = {};
+        var lib = {};
 
         /* A point in the center of a rectangular space defined by its width and height */
-        helper.CenterPoint = function (width, height, xOffset, yOffset) {
+        lib.CenterPoint = function (width, height, xOffset, yOffset) {
             this.x = width / 2 + xOffset;
             this.y = height / 2 + yOffset;
 
@@ -49,7 +43,7 @@ var SERFUEN = (function () {
         };
 
         // Allows to manage a canvas status, clear it while keeping a coordinate translation, etc.
-        helper.CanvasContextHelper = function(canvas) {
+        lib.CanvasContextHelper = function (canvas) {
             this.canvas = canvas;
             this.context = this.canvas.getContext("2d");
             this.canvas.width = this.canvas.clientWidth;
@@ -73,7 +67,7 @@ var SERFUEN = (function () {
                     y: y
                 };
                 this.context.translate(x, y);
-            }
+            };
 
             this.restoreOrigin = function () {
                 this.context.translate(-this.origin.x, -this.origin.y);
@@ -81,10 +75,10 @@ var SERFUEN = (function () {
                     x: 0,
                     y: 0
                 };
-            }
-        }
+            };
+        };
 
-        return helper;
+        return lib;
     }());
 
     // Create a template for the pie chart settings
@@ -95,7 +89,7 @@ var SERFUEN = (function () {
     var createPieChartSettings = function (chartData) {
         this.data = chartData || [];
         this.total = chartData.map(function (x) { return x.value; }).reduce(function (x, y) { return x + y; }); // the sum of all sectors
-        
+
         this.showPercentageInSectors = true; // show the percentage next to the sectors
         this.showCaptionLocation = "right"; // show a caption box if defined as right, top, bottom or left. If undefined or value unknown, no caption will be shown
 
@@ -120,8 +114,7 @@ var SERFUEN = (function () {
         };
     };
 
-    var pieChart = function(canvas, pieChartSettings) {
-
+    var pieChart = function (canvas, pieChartSettings) {
         var self = this;
 
         var CIRCLE_ANGLE = 2 * Math.PI;
@@ -145,10 +138,54 @@ var SERFUEN = (function () {
 
         var canvasContext = new helper.CanvasContextHelper(canvas);
         var contextData = getContextData();
-      
+
         var schedule = createPieSectorSchedule();
         var mouseLastMoved = 0;
         var currentSector = null;
+
+        this.drawPieChart = function () {
+            canvasContext.clearContext();
+            setContextOrigin();
+            var i, len, sector;
+
+            for (i = 0, len = schedule.length; i < len; i++) {
+                sector = schedule[i];
+                if (sector.isMouseOver) {
+                    canvasContext.context.globalAlpha = 0.5;
+                }
+                drawPieSector(sector.color, sector.startingAngle, sector.finishingAngle);
+                canvasContext.context.globalAlpha = 1;
+            }
+
+            if (pieChartSettings.sectorLineColor && schedule.length > 1) {
+                for (i = 0, len = schedule.length; i < len; i++) {
+                    sector = schedule[i];
+                    drawPieSectorDividingLine(pieChartSettings.sectorLineColor, pieChartSettings.sectorLineWidth, sector.finishingAngle);
+                }
+            }
+
+            if (pieChartSettings.circleLineColor) {
+                drawCircle(pieChartSettings.circleLineColor, pieChartSettings.circleLineWidth);
+            }
+
+            if (pieChartSettings.showPercentageInSectors) {
+                for (i = 0, len = schedule.length; i < len; i++) {
+                    sector = schedule[i];
+                    var text = Math.round(sector.percentage) + "%";
+                    var textSize = canvasContext.getTextSize(FONT, text);
+
+                    var point = {
+                        x: Math.cos(sector.bisectingAngle) * ((contextData.radius + contextData.maxTextWidth / 2) + PERCENTAGE_CAPTION_DISTANCE),
+                        y: Math.sin(sector.bisectingAngle) * ((contextData.radius + contextData.maxTextHeight / 2) + PERCENTAGE_CAPTION_DISTANCE)
+                    };
+                    drawText(percentageFontString, 'black', Math.round(sector.percentage) + "%", point);
+                }
+            }
+
+            if (pieChartSettings.showingChartKey()) {
+                drawChartKey();
+            }
+        };
 
         function getContextData() {
             var maxTextWidth = canvasContext.getTextSize(percentageFontString, "100%");
@@ -169,7 +206,7 @@ var SERFUEN = (function () {
 
             return {
                 pieMaxSize: pieMaxSize,
-                keyBoxWidth : keyBoxWidth,
+                keyBoxWidth: keyBoxWidth,
                 maxTextWidth: maxTextWidth,
                 maxTextHeight: maxTextHeight,
                 piepieMaxSize: pieMaxSize,
@@ -212,50 +249,6 @@ var SERFUEN = (function () {
             }
         }
 
-        this.drawPieChart = function () {
-            canvasContext.clearContext();
-            setContextOrigin();
-            var i, len, sector;
-
-            for (i = 0, len = schedule.length; i < len; i++) {
-                sector = schedule[i];
-                if (sector.isMouseOver) {
-                    canvasContext.context.globalAlpha = 0.5;
-                }
-                drawPieSector(sector.color, sector.startingAngle, sector.finishingAngle);
-                canvasContext.context.globalAlpha = 1;
-            }
-
-            if (pieChartSettings.sectorLineColor && schedule.length > 1) {
-                for (i = 0, len = schedule.length; i < len; i++) {
-                    sector = schedule[i];
-                    drawPieSectorDividingLine( pieChartSettings.sectorLineColor, pieChartSettings.sectorLineWidth, sector.finishingAngle);
-                }
-            }
-
-            if (pieChartSettings.circleLineColor) {
-                drawCircle(pieChartSettings.circleLineColor, pieChartSettings.circleLineWidth);
-            }
-
-            if (pieChartSettings.showPercentageInSectors) {
-                for (i = 0, len = schedule.length; i < len; i++) {
-                    sector = schedule[i];
-                    var text = Math.round(sector.percentage) + "%";
-                    var textSize = canvasContext.getTextSize(FONT, text);
-
-                    var point = {
-                        x: Math.cos(sector.bisectingAngle) * ((contextData.radius + contextData.maxTextWidth / 2) + PERCENTAGE_CAPTION_DISTANCE),
-                        y: Math.sin(sector.bisectingAngle) * ((contextData.radius + contextData.maxTextHeight / 2) + PERCENTAGE_CAPTION_DISTANCE)
-                    };
-                    drawText(percentageFontString, 'black', Math.round(sector.percentage) + "%", point);
-                }
-            }
-
-            if (pieChartSettings.showingChartKey()) {
-                drawChartKey();
-            }
-        };
-
         function drawChartKey() {
             var settings = getChartKeySettings();
             canvasContext.restoreOrigin();
@@ -290,7 +283,7 @@ var SERFUEN = (function () {
         function drawChartKeyCaption(index, caption, settings) {
             var y = settings.lineY + index * settings.lineHeight;
             var x = settings.lineX;
-            
+
             var font = schedule[index] == currentSector ? "bold " + keyFontString : keyFontString;
 
             drawText(font, 'black', caption.caption, { x: x, y: y }, "left", "top");
@@ -318,11 +311,11 @@ var SERFUEN = (function () {
             }
 
             return {
-                height : keyBoxHeight,
-                width : contextData.keyBoxWidth,
+                height: keyBoxHeight,
+                width: contextData.keyBoxWidth,
                 boxStartPoint: {
-                    x : xPoint,
-                    y : yPoint
+                    x: xPoint,
+                    y: yPoint
                 },
                 lineHeight: KEY_FONT_SIZE * KEY_LINE_HEIGHT_MODIFIER,
                 lineX: captionX,
@@ -331,41 +324,58 @@ var SERFUEN = (function () {
             };
         }
 
-        $(canvas).mousemove(function (event) {
-            setContextOrigin();
-            var rect = this.getBoundingClientRect();
-            var point = {
-                x: event.clientX - rect.left,
-                y: event.clientY - rect.top,
+        var mouseEvents = (function () {
+            var previousSector = null;
+
+            var onMouseMove = function (event) {
+                setContextOrigin();
+                var rect = this.getBoundingClientRect();
+                var point = {
+                    x: event.clientX - rect.left,
+                    y: event.clientY - rect.top,
+                };
+
+                var previousSector = currentSector;
+                currentSector = null;
+
+                var i, len, sector;
+                var canTrigger = true;
+                for (i = 0, len = schedule.length; i < len; i++) {
+                    sector = schedule[i];
+                    var isInside = isInsideSector(point, sector);
+                    sector.isMouseOver = isInside && canTrigger;
+                    if (sector.isMouseOver) {
+                        currentSector = sector;
+                        canTrigger = false;
+                    }
+                }
+
+                mouseLastMoved = Date.now();
+                var lastMoved = mouseLastMoved;
+                var currentSectorInternal = currentSector;
+
+                if ((currentSector === null && previousSector !== null) ||
+                    (currentSector !== null && previousSector === null) ||
+                    (currentSector !== null && previousSector !== null && currentSector.startingAngle !== previousSector.startingAngle)) {
+                    //console.log("Drawing");
+                    self.drawPieChart(); // redraw
+                }
+
+                canvasContext.restoreOrigin();
+ 
+                setTimeout(function () {
+                    if (mouseLastMoved == lastMoved && currentSector && currentSectorInternal == currentSector) {
+                        // draw tooltip with name + value + percentage
+                    }
+                }, SHOW_TOOLTIP_AFTER_HOVER_MS);
+
             };
-
-            currentSector = null;
-
-            var i, len, sector;
-            var canTrigger = true;
-            for (i = 0, len = schedule.length; i < len; i++) {
-                sector = schedule[i];
-                var isInside = isInsideSector(point, sector);
-                sector.isMouseOver = isInside && canTrigger;
-                if (sector.isMouseOver) {
-                    currentSector = sector;
-                    canTrigger = false;
-                }
-            }
-
-            mouseLastMoved = Date.now();
-            var lastMoved = mouseLastMoved;
-            var currentSectorInternal = currentSector;
-
-            self.drawPieChart(); // redraw
-
-            setTimeout(function () {
-                if (mouseLastMoved == lastMoved && currentSector && currentSectorInternal == currentSector) {
-                    // draw tooltip with name + value + percentage
-                }
-            }, SHOW_TOOLTIP_AFTER_HOVER_MS);
-
-        });
+            return {
+                onMouseMove: onMouseMove
+            };
+        })();
+        
+        $(canvas).mousemove(mouseEvents.onMouseMove);
 
         function getCaptions() {
             return pieChartSettings.data.map(function (value, index) {
@@ -431,8 +441,22 @@ var SERFUEN = (function () {
             if (schedule[schedule.length - 1].color == schedule[0].color) {
                 schedule[schedule.length - 1].color = getColor(Math.round((schedule.length - 1) / 2));
             }
-
+            rotateSectorSchedule(schedule);
             return schedule;
+        }
+
+        function rotateSectorSchedule(schedule) {
+            if (schedule.length > 0) {
+                var sector1 = schedule[0];
+                var rotateBy = ANGLE_ROTATE - sector1.angle / 2;
+                var i, len = schedule.length;
+                for (i = 0; i < len; i++) {
+                    var sector = schedule[i];
+                    sector.startingAngle = (sector.startingAngle + rotateBy) % CIRCLE_ANGLE;
+                    sector.finishingAngle = (sector.finishingAngle + rotateBy) % CIRCLE_ANGLE;
+                    sector.bisectingAngle = (sector.bisectingAngle + rotateBy) % CIRCLE_ANGLE;
+                }
+            }
         }
 
         function getAvailableWidth(bisectingWidth) {
@@ -471,7 +495,7 @@ var SERFUEN = (function () {
         function drawText(font, color, text, position, textAlign, textBaseline) {
             var context = canvasContext.context;
             context.fillStyle = color;
-            context.textAlign =  textAlign || "center";
+            context.textAlign = textAlign || "center";
             context.textBaseline = textBaseline || "middle";
             context.font = font;
             context.fillText(text, position.x, position.y);
@@ -490,7 +514,7 @@ var SERFUEN = (function () {
     return {
         // We export a helper function that allows retrieving a default settings object for the pie, with the data passed by the caller
         getPieChartSettings: createPieChartSettings,
-        helper : helper
+        helper: helper
     };
 }());
 
@@ -503,13 +527,12 @@ $(function () {
         { value: 38, valueFormatted: "38 million", name: "Poland" },
         { value: 17, valueFormatted: "17 million", name: "Netherlands" },
         { value: 11, valueFormatted: "11 million", name: "Belgium" },
-        { value: 10, valueFormatted: "10 million", name: "Portugal" }].sort(function(x, y) {
+        { value: 10, valueFormatted: "10 million", name: "Portugal" }].sort(function (x, y) {
             return -(x.value - y.value);
         });
 
     var data =
-        [{ value: 25000, valueFormatted: "25.000 €", name: "Dinero invertido" },
-            { value: 35000, valueFormatted: "35.000 €", name: "Dinero en cuenta corriente" }
+        [{ value: 25000, valueFormatted: "25.000 €", name: "Dinero invertido" }
         ];
     var settings = new SERFUEN.getPieChartSettings(data);
     settings.showCaptionLocation = "right";
