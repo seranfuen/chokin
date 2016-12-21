@@ -13,81 +13,89 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+/*
+To do: 
+    a canvas shouldn't be passed to the jQuery method. Pass a div element instead. the canvas will be added to it with an ID that must be 
+    the canvas should be between <figure> tags
+    optionally, a figcaption could be added below by adding it to the initializer object
+
+    But see how to handle the fact the canvas must have a size
 */
-/* TODO:
- * 1. When hovering over a sector, display it's info as a tooltip box
- * 2. Scalability tests
- */
 
 var SERFUEN = (function () {
-    var helper = (function () {
-        var lib = {};
-
-        /* A point in the center of a rectangular space defined by its width and height */
-        lib.CenterPoint = function (width, height, xOffset, yOffset) {
-            this.x = width / 2 + xOffset;
-            this.y = height / 2 + yOffset;
-
-            // gets a location in terms of the center. Can be used to obtain vectors
-            this.getRelativePosition = function (x, y) {
-                return {
-                    x: this.x + x,
-                    y: this.y + y
-                };
-            };
-        };
-
-        // Allows to manage a canvas status, clear it while keeping a coordinate translation, etc.
-        lib.CanvasContextHelper = function (canvas) {
+    var chartHelper = {
+        // A point at the center of a rectangular space defined by its width and height, and optionally initialized relative to that point offset by x and y
+        CenterPoint: function (width, height, xOffset, yOffset) {
+            this.xOffset = xOffset || 0;
+            this.yOffset = yOffset || 0;
+            this.x = width / 2 + this.xOffset;
+            this.y = height / 2 + this.yOffset;
+        },
+        CanvasContextchartHelper: function (canvas) {
             this.canvas = canvas;
             this.context = this.canvas.getContext("2d");
             this.canvas.width = this.canvas.clientWidth;
             this.canvas.height = this.canvas.clientHeight;
             this.origin = { x: 0, y: 0 };
+        }
+    };
 
-            // empties the canvas
-            this.clearContext = function () {
-                this.restoreOrigin();
-                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    chartHelper.CenterPoint.prototype = {
+        // Gets another point relative to the center point, offset by "x" and "y"
+        getRelativePosition: function (xOffset, yOffset) {
+            return {
+                x: this.x + xOffset,
+                y: this.y + yOffset
             };
+        }
+    };
 
-            this.getTextSize = function (font, text) {
-                this.context.font = font;
-                return this.context.measureText(text).width;
+    chartHelper.CanvasContextchartHelper.prototype = {
+        // Clears (deletes) all elements in the context. It restores the coordinate origin
+        clearContext: function () {
+            this.restoreOrigin();
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        },
+        // For the font type-size and text passed, determines the width of the text in pixels
+        getTextSize: function (font, text) {
+            this.context.font = font;
+            return this.context.measureText(text).width;
+        },
+        // Changes 
+        changeOrigin: function (x, y) {
+            this.restoreOrigin();
+            this.origin = {
+                x: x,
+                y: y
             };
-
-            this.changeOrigin = function (x, y) {
-                this.origin = {
-                    x: x,
-                    y: y
-                };
-                this.context.translate(x, y);
+            this.context.translate(x, y);
+        },
+        restoreOrigin: function () {
+            this.context.translate(-this.origin.x, -this.origin.y);
+            this.origin = {
+                x: 0,
+                y: 0
             };
+        }
+    };
 
-            this.restoreOrigin = function () {
-                this.context.translate(-this.origin.x, -this.origin.y);
-                this.origin = {
-                    x: 0,
-                    y: 0
-                };
-            };
-        };
+    /* A template with the settings that must be passed to the pie chart. It is exported so the client can
+       set up a pie chart. The compulsory data to pass is the chartData, which is an array-like collection of objects
+       with the properties
+       value : the numerical value of each slice of the pie. It is needed to set the proportions
+       valueFormatted : optionally, the same value but given a format to display (For example, in currency)
+       name: the name that the data slice represents
 
-        return lib;
-    } ());
-
-    // Create a template for the pie chart settings
-    // The chart data is an array of objects with the following properties
-    // value: the numeric value that represents a piece of data out of the total data being charted
-    // valueFormatted: if provided, this will be shown instead of value
-    // name: the name or description of the value
-    var createPieChartSettings = function (chartData) {
+       The rest of the properties may be changed by the client if so desired. They mainly set the color palette, line width and color, wheteher to show a chart key or percentages
+    */
+    var PieChartInitializer = function (chartData) {
         this.data = chartData || [];
-        this.total = chartData.map(function (x) { return x.value; }).reduce(function (x, y) { return x + y; }); // the sum of all sectors
+        this.total = this.calculateTotal(this.data);
 
-        this.showPercentageInSectors = true; // show the percentage next to the sectors
-        this.showCaptionLocation = "right"; // show a caption box if defined as right, top, bottom or left. If undefined or value unknown, no caption will be shown
+        this.showPercentageInSectors = true; // show the percentage each sector represents next to it
+        this.showCaptionLocation = "right"; // show a caption box if defined as right or left. If undefined or value unknown, no caption will be shown
 
         // APPEARANCE
         this.colorPalette = ["gray", "blue", "orange", "green", "pink", "brown", "purple", "yellow", "red"]; // color palette, colors will repeat if more values than colors
@@ -95,25 +103,29 @@ var SERFUEN = (function () {
         this.sectorLineWidth = 2; // thickness of line separating sectors
         this.circleLineColor = "black"; // the color of the circle. If not defined, no line will be drawn
         this.circleLineWidth = 2; // thicness of the circle
-
-        this.showingChartKey = function () {
-            var caption = this.showCaptionLocation || "";
-            caption = caption.toUpperCase();
-            return caption == "RIGHT" || caption == "LEFT" || caption == "TOP" || caption == "BOTTOM";
-        };
-
-        this.showingKeyRight = function () {
-            return this.showCaptionLocation.toUpperCase() == "RIGHT";
-        };
-
-        this.showingKeyLeft = function () {
-            return this.showCaptionLocation.toUpperCase() == "LEFT";
-        };
     };
 
-    var pieChart = function (canvas, pieChartSettings) {
+    PieChartInitializer.prototype = {
+        calculateTotal: function (data) {
+            return data.map(function (x) {
+                return x.value;
+            }).reduce(function (x, y) {
+                return x + y;
+            });
+        },
+        showingChartKey : function () {
+            return this.showingKeyRight() || this.showingKeyLeft();
+        },
+        showingKeyRight : function () {
+            return this.showCaptionLocation.toUpperCase() == "RIGHT";
+        },
+        showingKeyLeft : function () {
+            return this.showCaptionLocation.toUpperCase() == "LEFT";
+        }
+    };
+
+    var PieChart = function (canvas, pieChartSettings) {
         var self = this;
-        this.VERSION = "0.0.1";
 
         var CIRCLE_ANGLE = 2 * Math.PI;
         var PIE_RADIUS_RATIO = 0.85; // Percentage of the total width/height (whichever is smaller) that will be used for the caption, if enabled
@@ -123,8 +135,6 @@ var SERFUEN = (function () {
         var LINE_HEIGHT_MULTIPLIER = 1.6;
 
         var FONT_SCALE = 0.02;
-
-        var SHOW_TOOLTIP_AFTER_HOVER_MS = 1500; // Number of ms that must elapse to show the tooltip over a sector indicating value, percentage and name
 
         var FONT = "ARIAL"; // font name
         var PERCENTAGE_CAPTION_DISTANCE = 5; // distance in pixels between the pie chart and the caption showing the percentage
@@ -168,7 +178,7 @@ var SERFUEN = (function () {
         };
 
 
-        var canvasContext = new helper.CanvasContextHelper(canvas);
+        var canvasContext = new chartHelper.CanvasContextchartHelper(canvas);
         var fontMeasures = fontSizeRange.getFontSizes(canvas.width, canvas.height);
 
         var percentageFontString = fontMeasures.fontSize + "px " + FONT;
@@ -242,9 +252,9 @@ var SERFUEN = (function () {
                 if (!pieChartSettings.showingChartKey()) {
                     return 0;
                 } else if (pieChartSettings.showingKeyRight()) {
-                    return -(canvas.width - (canvas.width - keyBoxWidth))/2
+                    return -(canvas.width - (canvas.width - keyBoxWidth)) / 2
                 } else if (pieChartSettings.showingKeyLeft()) {
-                    return (canvas.width - keyBoxWidth)/2;
+                    return (canvas.width - keyBoxWidth) / 2;
                 } else {
                     return 0;
                 }
@@ -379,7 +389,6 @@ var SERFUEN = (function () {
                 }
 
                 mouseLastMoved = Date.now();
-                var lastMoved = mouseLastMoved;
                 var currentSectorInternal = currentSector;
 
                 if ((currentSector === null && previousSector !== null) ||
@@ -390,13 +399,6 @@ var SERFUEN = (function () {
                 }
 
                 canvasContext.restoreOrigin();
-
-                setTimeout(function () {
-                    if (mouseLastMoved == lastMoved && currentSector && currentSectorInternal == currentSector) {
-                        // draw tooltip with name + value + percentage
-                    }
-                }, SHOW_TOOLTIP_AFTER_HOVER_MS);
-
             };
             return {
                 onMouseMove: onMouseMove
@@ -415,7 +417,7 @@ var SERFUEN = (function () {
         }
 
         function setContextOrigin() {
-            var center = new helper.CenterPoint(canvas.width, canvas.height, contextData.xOffset, PIE_CENTER_Y_OFFSET);
+            var center = new chartHelper.CenterPoint(canvas.width, canvas.height, contextData.xOffset, PIE_CENTER_Y_OFFSET);
             canvasContext.changeOrigin(center.x, center.y);
         }
 
@@ -529,20 +531,23 @@ var SERFUEN = (function () {
         }
     };
 
+    PieChart.prototype = {
+        VERSION : "0.0.1"
+    };
+
     $.fn.pieChart = function (pieChartSettings) {
-        pieChartSettings = pieChartSettings || new createPieChartSettings();
+        pieChartSettings = pieChartSettings || new PieChartInitializer();
         return this.each(function () {
             var canvas = $(this).get(0);
-            var drawer = new pieChart(canvas, pieChartSettings);
+            var drawer = new PieChart(canvas, pieChartSettings);
             drawer.drawPieChart();
         });
     };
 
     return {
-        // We export a helper function that allows retrieving a default settings object for the pie, with the data passed by the caller
-        getPieChartSettings: createPieChartSettings,
-        helper: helper,
-        version: this.version
+        // We export a chartHelper function that allows retrieving a default settings object for the pie, with the data passed by the caller
+        getPieChartSettings: PieChartInitializer,
+        chartHelper: chartHelper
     };
 } ());
 
@@ -559,11 +564,11 @@ $(function () {
             return -(x.value - y.value);
         });
 
-    //var data =
-    //    [{ value: 25000, valueFormatted: "25.000 €", name: "Dinero invertido" }
-    //    ];
+    var data =
+        [{ value: 25000, valueFormatted: "25.000 €", name: "Dinero invertido" },
+        { value : 80000, valueFormatted : "80.000 €", name: "Dinero en depósito"}
+        ];
     var settings = new SERFUEN.getPieChartSettings(data);
     settings.showCaptionLocation = "right";
-    settings.animationSpeed = 1000;
-    $('#test_canvas').pieChart(settings);
+    $("#test_canvas").pieChart(settings);
 });
