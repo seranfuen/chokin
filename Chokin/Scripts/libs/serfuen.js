@@ -15,14 +15,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/*
-To do: 
-    a canvas shouldn't be passed to the jQuery method. Pass a div element instead. the canvas will be added to it with an ID that must be 
-    the canvas should be between <figure> tags
-    optionally, a figcaption could be added below by adding it to the initializer object
 
-    But see how to handle the fact the canvas must have a size
-*/
+// TODO: we should return a "widget" object when invoking that preserves the jQuery status
+// with this object we can make changes, including to the size of the chart and any other settings like color
+// we must test if the jQuery objects repreent a canvas. If they repersent a <div>, add a canvas instead
 
 var SERFUEN = (function () {
     var chartHelper = {
@@ -113,25 +109,19 @@ var SERFUEN = (function () {
                 return x + y;
             });
         },
-        showingChartKey : function () {
+        showingChartKey: function () {
             return this.showingKeyRight() || this.showingKeyLeft();
         },
-        showingKeyRight : function () {
+        showingKeyRight: function () {
             return this.showCaptionLocation.toUpperCase() == "RIGHT";
         },
-        showingKeyLeft : function () {
+        showingKeyLeft: function () {
             return this.showCaptionLocation.toUpperCase() == "LEFT";
         }
     };
 
     var PieChart = function (canvas, pieChartSettings) {
         var self = this;
-
-        var CIRCLE_ANGLE = 2 * Math.PI;
-        var PIE_RADIUS_RATIO = 0.85; // Percentage of the total width/height (whichever is smaller) that will be used for the caption, if enabled
-        var MAX_CAPTION_WIDTH_RATIO = 0.5; // The pie will be shrunk up to this ratio of its maximum possible size to make room for the caption. If some caption is wider, it will be clipped
-        var PIE_CENTER_Y_OFFSET = 0;  // If Y is positive, it will be offset to the bottom of the center of the canvas
-        var ANGLE_ROTATE = CIRCLE_ANGLE * (3 / 4);
         var LINE_HEIGHT_MULTIPLIER = 1.6;
 
         var FONT_SCALE = 0.02;
@@ -142,28 +132,27 @@ var SERFUEN = (function () {
         var KEY_BOX_LINEWIDTH = 3;
 
         var fontSizeRange = {
-
             getFontSizes: function (canvasWidth, canvasHeight) {
-                var minSize = Math.min(canvasWidth, canvasHeight);
+                var sizeBase = Math.min(canvasWidth, canvasHeight);
 
                 var fontSize = getFontSize();
                 var lineHeight = getLineHeight() + fontSize;
 
                 function getFontSize() {
-                    if (minSize < 400) {
+                    if (sizeBase < 400) {
                         return 10;
                     }
-                    else if (minSize >= 400 && minSize < 800) {
-                        return 0.0267 * minSize;
+                    else if (sizeBase >= 400 && sizeBase < 800) {
+                        return 14 + 0.025 * (sizeBase - 400);
                     } else {
                         return 24;
                     }
                 }
 
                 function getLineHeight() {
-                    if (minSize < 400) {
+                    if (sizeBase < 400) {
                         return 2;
-                    } else if (minSize > 400 && minSize <= 800) {
+                    } else if (sizeBase > 400 && sizeBase <= 800) {
                         return 2 + 3 / (800 - 400);
                     } else {
                         return 6;
@@ -233,10 +222,12 @@ var SERFUEN = (function () {
         };
 
         function getContextData() {
-            var maxTextWidth = canvasContext.getTextSize(percentageFontString, "100%");
-            var longestCaption = getLongestCaption();
-            var longestCaptionWidth = canvasContext.getTextSize("bold " + keyFontString, longestCaption);
-            var keyBoxWidth = Math.min(canvas.width * MAX_CAPTION_WIDTH_RATIO, 2 * KEY_BOX_PADDING + fontMeasures.fontSize * 2 + longestCaptionWidth + 2 * KEY_BOX_LINEWIDTH); // twice the font size will be the square with the color
+            var PIE_RADIUS_RATIO = 0.85,
+                MAX_CAPTION_WIDTH_RATIO = 0.5, // The pie will be shrunk up to this ratio of its maximum possible size to make room for the caption. If some caption is wider, it will be clipped // Percentage of the total width/height (whichever is smaller) that will be used for the caption, if enabled
+                maxTextWidth = canvasContext.getTextSize(percentageFontString, "100%"),
+                longestCaption = getLongestCaption(),
+                longestCaptionWidth = canvasContext.getTextSize("bold " + keyFontString, longestCaption),
+                keyBoxWidth = Math.min(canvas.width * MAX_CAPTION_WIDTH_RATIO, 2 * KEY_BOX_PADDING + fontMeasures.fontSize * 2 + longestCaptionWidth + 2 * KEY_BOX_LINEWIDTH); // twice the font size will be the square with the color
 
             var availableWidth = canvas.width - (pieChartSettings.showingChartKey() ? keyBoxWidth : 0);
 
@@ -417,7 +408,8 @@ var SERFUEN = (function () {
         }
 
         function setContextOrigin() {
-            var center = new chartHelper.CenterPoint(canvas.width, canvas.height, contextData.xOffset, PIE_CENTER_Y_OFFSET);
+            var PIE_CENTER_Y_OFFSET = 0,  // If Y is positive, it will be offset to the bottom of the center of the canvas
+                center = new chartHelper.CenterPoint(canvas.width, canvas.height, contextData.xOffset, PIE_CENTER_Y_OFFSET);
             canvasContext.changeOrigin(center.x, center.y);
         }
 
@@ -439,31 +431,52 @@ var SERFUEN = (function () {
             return pieChartSettings.colorPalette[index % pieChartSettings.colorPalette.length];
         }
 
-        function getSectorSchedule(data, accumulatedAngle, sectorAngle, value, color) {
-            return {
-                startingAngle: accumulatedAngle,
-                finishingAngle: Math.min(CIRCLE_ANGLE, sectorAngle + accumulatedAngle),
-                angle: sectorAngle,
-                value: value,
-                color: color,
-                bisectingAngle: (sectorAngle / 2) + accumulatedAngle,
-                percentage: (value / pieChartSettings.total) * 100,
-                getBisectingWidth: function (radius) {
-                    return Math.sin(sectorAngle / 2) * radius;
-                },
-                isMouseOver: false
-            };
-        }
-
         function createPieSectorSchedule() {
-            var pieChartData = pieChartSettings.data;
-            var schedule = [];
-            var currentAngle = 0;
+            var CIRCLE_ANGLE = 2 * Math.PI;
+            var ANGLE_ROTATE = CIRCLE_ANGLE * (3 / 4);
 
-            var i, len;
-            for (i = 0, len = pieChartData.length; i < len; i++) {
-                var angle = pieChartData[i].value * (CIRCLE_ANGLE / pieChartSettings.total);
-                schedule[i] = getSectorSchedule(pieChartData, currentAngle, angle, pieChartData[i].value, getColor(i));
+            var data = pieChartSettings.data,
+                schedule = [],
+                currentAngle = 0,
+                i,
+                len,
+                getSectorSchedule = function () {
+                    var color = getColor(i),
+                        value = data[i].value,
+                        sectorAngle = data[i].value * (CIRCLE_ANGLE / pieChartSettings.total);
+                    return {
+                        startingAngle: currentAngle,
+                        finishingAngle: Math.min(CIRCLE_ANGLE, sectorAngle + currentAngle),
+                        angle: sectorAngle,
+                        value: value,
+                        color: color,
+                        bisectingAngle: (sectorAngle / 2) + currentAngle,
+                        percentage: (value / pieChartSettings.total) * 100,
+                        getBisectingWidth: function (radius) {
+                            return Math.sin(sectorAngle / 2) * radius;
+                        },
+                        isMouseOver: false
+                    };
+                },
+                rotateSectorSchedule = function () {
+                    if (schedule.length > 1) {
+                        var sector1 = schedule[0];
+                        var rotateBy = ANGLE_ROTATE - sector1.angle / 2;
+                        var i, len = schedule.length;
+                        for (i = 0; i < len; i++) {
+                            var sector = schedule[i];
+                            sector.startingAngle = (sector.startingAngle + rotateBy) % CIRCLE_ANGLE;
+                            sector.finishingAngle = (sector.finishingAngle + rotateBy) % CIRCLE_ANGLE;
+                            sector.bisectingAngle = (sector.bisectingAngle + rotateBy) % CIRCLE_ANGLE;
+                        }
+                    } else if (schedule.length == 1) {
+                        var sector1 = schedule[0];
+                        sector1.bisectingAngle = (sector1.angle / 2 - ANGLE_ROTATE) % CIRCLE_ANGLE;
+                    }
+                };
+
+            for (i = 0, len = data.length; i < len; i++) {
+                schedule[i] = getSectorSchedule();
                 currentAngle += schedule[i].angle;
             }
 
@@ -471,25 +484,8 @@ var SERFUEN = (function () {
             if (schedule[schedule.length - 1].color == schedule[0].color) {
                 schedule[schedule.length - 1].color = getColor(Math.round((schedule.length - 1) / 2));
             }
-            rotateSectorSchedule(schedule);
+            rotateSectorSchedule();
             return schedule;
-        }
-
-        function rotateSectorSchedule(schedule) {
-            if (schedule.length > 1) {
-                var sector1 = schedule[0];
-                var rotateBy = ANGLE_ROTATE - sector1.angle / 2;
-                var i, len = schedule.length;
-                for (i = 0; i < len; i++) {
-                    var sector = schedule[i];
-                    sector.startingAngle = (sector.startingAngle + rotateBy) % CIRCLE_ANGLE;
-                    sector.finishingAngle = (sector.finishingAngle + rotateBy) % CIRCLE_ANGLE;
-                    sector.bisectingAngle = (sector.bisectingAngle + rotateBy) % CIRCLE_ANGLE;
-                }
-            } else if (schedule.length == 1) {
-                var sector1 = schedule[0];
-                sector1.bisectingAngle = (sector1.angle / 2 - ANGLE_ROTATE) % CIRCLE_ANGLE;
-            }
         }
 
         function drawPieSector(color, startingAngle, finishingAngle) {
@@ -532,7 +528,7 @@ var SERFUEN = (function () {
     };
 
     PieChart.prototype = {
-        VERSION : "0.0.1"
+        VERSION: "0.0.1"
     };
 
     $.fn.pieChart = function (pieChartSettings) {
@@ -564,10 +560,10 @@ $(function () {
             return -(x.value - y.value);
         });
 
-    var data =
-        [{ value: 25000, valueFormatted: "25.000 €", name: "Dinero invertido" },
-        { value : 80000, valueFormatted : "80.000 €", name: "Dinero en depósito"}
-        ];
+    //var data =
+    //    [{ value: 25000, valueFormatted: "25.000 €", name: "Dinero invertido" },
+    //    { value: 80000, valueFormatted: "80.000 €", name: "Dinero en depósito" }
+    //    ];
     var settings = new SERFUEN.getPieChartSettings(data);
     settings.showCaptionLocation = "right";
     $("#test_canvas").pieChart(settings);
