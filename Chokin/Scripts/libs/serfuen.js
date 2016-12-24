@@ -221,6 +221,11 @@ var SERFUEN = (function () {
             }
         };
 
+        this.disable = function () {
+            canvas.removeEventListener("mousemove", mouseEvents.onMouseMove);
+            canvasContext.clearContext();
+        };
+
         function getContextData() {
             var PIE_RADIUS_RATIO = 0.85,
                 MAX_CAPTION_WIDTH_RATIO = 0.5, // The pie will be shrunk up to this ratio of its maximum possible size to make room for the caption. If some caption is wider, it will be clipped // Percentage of the total width/height (whichever is smaller) that will be used for the caption, if enabled
@@ -244,7 +249,7 @@ var SERFUEN = (function () {
                     return 0;
                 } else if (pieChartSettings.showingKeyRight()) {
                     return -(canvas.width - (canvas.width - keyBoxWidth)) / 2
-                } else if (pieChartSettings.showingKeyLeft()) {
+                } else if (this.pieChartSettings.showingKeyLeft()) {
                     return (canvas.width - keyBoxWidth) / 2;
                 } else {
                     return 0;
@@ -396,7 +401,7 @@ var SERFUEN = (function () {
             };
         })();
 
-        $(canvas).mousemove(mouseEvents.onMouseMove);
+        canvas.addEventListener("mousemove", mouseEvents.onMouseMove);
 
         function getCaptions() {
             return pieChartSettings.data.map(function (value, index) {
@@ -527,23 +532,32 @@ var SERFUEN = (function () {
         }
     };
 
-    PieChart.prototype = {
-        VERSION: "0.0.1"
-    };
+    PieChart.VERSION = "0.0.1";
+    PieChart.cache = [];
+    PieChart.PieChartContext = function (elementId, pieChartSettings) {
+            var canvasElement = document.getElementById(elementId);
+            var pieChart = new PieChart(canvasElement, pieChartSettings);
 
-    $.fn.pieChart = function (pieChartSettings) {
-        pieChartSettings = pieChartSettings || new PieChartInitializer();
-        return this.each(function () {
-            var canvas = $(this).get(0);
-            var drawer = new PieChart(canvas, pieChartSettings);
-            drawer.drawPieChart();
-        });
+            this.show = function () {
+                pieChart.drawPieChart();
+            };
+
+            this.hide = function () {
+                pieChart.disable();
+            };
+        }
+
+    var makePieChart = function (elementId, pieChartSettings) {
+        if (!(elementId in PieChart.cache)) {
+            PieChart.cache.elementId = new PieChart.PieChartContext(elementId, pieChartSettings);
+        }
+        return PieChart.cache.elementId;
     };
 
     return {
         // We export a chartHelper function that allows retrieving a default settings object for the pie, with the data passed by the caller
         getPieChartSettings: PieChartInitializer,
-        chartHelper: chartHelper
+        pieChart: makePieChart,
     };
 } ());
 
@@ -566,5 +580,9 @@ $(function () {
     //    ];
     var settings = new SERFUEN.getPieChartSettings(data);
     settings.showCaptionLocation = "right";
-    $("#test_canvas").pieChart(settings);
+    var pie = SERFUEN.pieChart("test_canvas", settings);
+    pie.show();
+    $("#boton").click(function () {
+        pie.hide();
+    });
 });
