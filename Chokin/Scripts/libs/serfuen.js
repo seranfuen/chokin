@@ -15,11 +15,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-
-// TODO: we should return a "widget" object when invoking that preserves the jQuery status
-// with this object we can make changes, including to the size of the chart and any other settings like color
-// we must test if the jQuery objects repreent a canvas. If they repersent a <div>, add a canvas instead
-
 var SERFUEN = (function () {
     var chartHelper = {
         // A point at the center of a rectangular space defined by its width and height, and optionally initialized relative to that point offset by x and y
@@ -87,9 +82,7 @@ var SERFUEN = (function () {
        The rest of the properties may be changed by the client if so desired. They mainly set the color palette, line width and color, wheteher to show a chart key or percentages
     */
     var PieChartInitializer = function (chartData) {
-        this.data = chartData || [];
-        this.total = this.calculateTotal(this.data);
-
+        this.setData(chartData);
         this.showPercentageInSectors = true; // show the percentage each sector represents next to it
         this.showCaptionLocation = "right"; // show a caption box if defined as right or left. If undefined or value unknown, no caption will be shown
 
@@ -109,14 +102,18 @@ var SERFUEN = (function () {
                 return x + y;
             });
         },
+        setData: function (data) {
+            this.data = data || [];
+            this.total = this.calculateTotal(this.data);
+        },
         showingChartKey: function () {
             return this.showingKeyRight() || this.showingKeyLeft();
         },
         showingKeyRight: function () {
-            return this.showCaptionLocation.toUpperCase() == "RIGHT";
+            return this.showCaptionLocation !== null && this.showCaptionLocation.toUpperCase() == "RIGHT";
         },
         showingKeyLeft: function () {
-            return this.showCaptionLocation.toUpperCase() == "LEFT";
+            return this.showCaptionLocation !== null && this.showCaptionLocation.toUpperCase() == "LEFT";
         }
     };
 
@@ -176,7 +173,6 @@ var SERFUEN = (function () {
         var contextData = getContextData();
 
         var schedule = createPieSectorSchedule();
-        var mouseLastMoved = 0;
         var currentSector = null;
 
         this.drawPieChart = function () {
@@ -224,6 +220,12 @@ var SERFUEN = (function () {
         this.disable = function () {
             canvas.removeEventListener("mousemove", mouseEvents.onMouseMove);
             canvasContext.clearContext();
+        };
+
+        this.setData = function (data) {
+            pieChartSettings.setData(data);
+            contextData = getContextData();
+            schedule = createPieSectorSchedule();
         };
 
         function getContextData() {
@@ -384,16 +386,13 @@ var SERFUEN = (function () {
                     }
                 }
 
-                mouseLastMoved = Date.now();
                 var currentSectorInternal = currentSector;
 
                 if ((currentSector === null && previousSector !== null) ||
                     (currentSector !== null && previousSector === null) ||
                     (currentSector !== null && previousSector !== null && currentSector.startingAngle !== previousSector.startingAngle)) {
-                    //console.log("Drawing");
                     self.drawPieChart(); // redraw
                 }
-
                 canvasContext.restoreOrigin();
             };
             return {
@@ -401,7 +400,9 @@ var SERFUEN = (function () {
             };
         })();
 
-        canvas.addEventListener("mousemove", mouseEvents.onMouseMove);
+        if (pieChartSettings.showingChartKey()) {
+            canvas.addEventListener("mousemove", mouseEvents.onMouseMove);
+        }
 
         function getCaptions() {
             return pieChartSettings.data.map(function (value, index) {
@@ -545,6 +546,11 @@ var SERFUEN = (function () {
             this.hide = function () {
                 pieChart.disable();
             };
+
+            this.setData = function (data) {
+                pieChart.setData(data);
+                pieChart.drawPieChart();
+            };
         }
 
     var makePieChart = function (elementId, pieChartSettings) {
@@ -561,28 +567,29 @@ var SERFUEN = (function () {
     };
 } ());
 
-$(function () {
-    var data =
-        [{ value: 46, valueFormatted: "46 million", name: "Spain" },
-        { value: 80, valueFormatted: "80 million", name: "Germany" },
-        { value: 66, valueFormatted: "66 million", name: "France" },
-        { value: 64, valueFormatted: "64 million", name: "United Kingdom" },
-        { value: 38, valueFormatted: "38 million", name: "Poland" },
-        { value: 17, valueFormatted: "17 million", name: "Netherlands" },
-        { value: 11, valueFormatted: "11 million", name: "Belgium" },
-        { value: 10, valueFormatted: "10 million", name: "Portugal" }].sort(function (x, y) {
-            return -(x.value - y.value);
-        });
+//$(function () {
+//    var data =
+//        [{ value: 46, valueFormatted: "46 million", name: "Spain" },
+//        { value: 80, valueFormatted: "80 million", name: "Germany" },
+//        { value: 66, valueFormatted: "66 million", name: "France" },
+//        { value: 64, valueFormatted: "64 million", name: "United Kingdom" },
+//        { value: 38, valueFormatted: "38 million", name: "Poland" },
+//        { value: 17, valueFormatted: "17 million", name: "Netherlands" },
+//        { value: 11, valueFormatted: "11 million", name: "Belgium" },
+//        { value: 10, valueFormatted: "10 million", name: "Portugal" }].sort(function (x, y) {
+//            return -(x.value - y.value);
+//        });
 
-    //var data =
-    //    [{ value: 25000, valueFormatted: "25.000 €", name: "Dinero invertido" },
-    //    { value: 80000, valueFormatted: "80.000 €", name: "Dinero en depósito" }
-    //    ];
-    var settings = new SERFUEN.getPieChartSettings(data);
-    settings.showCaptionLocation = "right";
-    var pie = SERFUEN.pieChart("test_canvas", settings);
-    pie.show();
-    $("#boton").click(function () {
-        pie.hide();
-    });
-});
+
+//    var settings = new SERFUEN.getPieChartSettings(data);
+//    settings.showCaptionLocation = "right";
+//    var pie = SERFUEN.pieChart("test_canvas", settings);
+//    pie.show();
+//    $("#boton").click(function () {
+//        var data =
+//            [{ value: 25000, valueFormatted: "25.000 €", name: "Dinero invertido" },
+//            { value: 80000, valueFormatted: "80.000 €", name: "Dinero en depósito" }
+//            ];
+//        pie.setData(data);
+//    });
+//});
