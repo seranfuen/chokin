@@ -15,6 +15,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/*
+
+    TODO: better scaling. At width 500, height 300 the font is too small
+    When using the chart to display data dynamically, the difference in width between data causes the chart to shirnk or expand. An optional setting should be passed
+    with the minimum expected length in characters, instead of calculating it dynamically (when this parameter is present)
+
+*/
+
 var SERFUEN = (function () {
     var chartHelper = {
         // A point at the center of a rectangular space defined by its width and height, and optionally initialized relative to that point offset by x and y
@@ -96,11 +104,15 @@ var SERFUEN = (function () {
 
     PieChartInitializer.prototype = {
         calculateTotal: function (data) {
-            return data.map(function (x) {
-                return x.value;
-            }).reduce(function (x, y) {
-                return x + y;
-            });
+            if (data.length == 0) {
+                return 0;
+            } else {
+                return data.map(function (x) {
+                    return x.value;
+                }).reduce(function (x, y) {
+                    return x + y;
+                });
+            }
         },
         setData: function (data) {
             this.data = data || [];
@@ -487,8 +499,10 @@ var SERFUEN = (function () {
             }
 
             // Fix color of last element if it's the same as the first to avoid two identical contiguous sectors. Will take the sector in the middle. Will not work if only 2 colors and 3 sectors
-            if (schedule[schedule.length - 1].color == schedule[0].color) {
-                schedule[schedule.length - 1].color = getColor(Math.round((schedule.length - 1) / 2));
+            if (schedule.length > 0) {
+                if (schedule[schedule.length - 1].color == schedule[0].color) {
+                    schedule[schedule.length - 1].color = getColor(Math.round((schedule.length - 1) / 2));
+                }
             }
             rotateSectorSchedule();
             return schedule;

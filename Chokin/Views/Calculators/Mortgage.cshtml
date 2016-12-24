@@ -80,15 +80,17 @@
                         </table>
                     </div>
                 </div>
-                <div class="col-sm-6">
+ 
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
                     <canvas id="graph_interests"></canvas>
                 </div>
-            </div>
-            <div class="row">
-
             </div>
         </div>
 </div>
 @section scripts {
+    @Scripts.Render("~/Scripts/libs/serfuen.js")
     @Scripts.Render("~/Scripts/app/calculator.js")
 }
