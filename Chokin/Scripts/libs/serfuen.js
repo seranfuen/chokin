@@ -15,14 +15,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/*
-
-    TODO: better scaling. At width 500, height 300 the font is too small
-    When using the chart to display data dynamically, the difference in width between data causes the chart to shirnk or expand. An optional setting should be passed
-    with the minimum expected length in characters, instead of calculating it dynamically (when this parameter is present)
-
-*/
-
 var SERFUEN = (function () {
     var chartHelper = {
         // A point at the center of a rectangular space defined by its width and height, and optionally initialized relative to that point offset by x and y
@@ -93,6 +85,7 @@ var SERFUEN = (function () {
         this.setData(chartData);
         this.showPercentageInSectors = true; // show the percentage each sector represents next to it
         this.showCaptionLocation = "right"; // show a caption box if defined as right or left. If undefined or value unknown, no caption will be shown
+        this.minimumCaption = null; // If shorter strings are found, make the caption key box as large as to contain this string. Useful when dynamically resizing the pie chart
 
         // APPEARANCE
         this.colorPalette = ["gray", "blue", "orange", "green", "pink", "brown", "purple", "yellow", "red"]; // color palette, colors will repeat if more values than colors
@@ -100,6 +93,7 @@ var SERFUEN = (function () {
         this.sectorLineWidth = 2; // thickness of line separating sectors
         this.circleLineColor = "black"; // the color of the circle. If not defined, no line will be drawn
         this.circleLineWidth = 2; // thicness of the circle
+        this.font = null; // if null or undefined, it's set to auto. It will be scaled to canvas size. Otherwise, it is the font size in pixels
     };
 
     PieChartInitializer.prototype = {
@@ -129,16 +123,25 @@ var SERFUEN = (function () {
         }
     };
 
-    var PieChart = function (canvas, pieChartSettings) {
+    var PieChart = function (canvas, options) {
         var self = this;
         var LINE_HEIGHT_MULTIPLIER = 1.6;
-
         var FONT_SCALE = 0.02;
-
         var FONT = "ARIAL"; // font name
         var PERCENTAGE_CAPTION_DISTANCE = 5; // distance in pixels between the pie chart and the caption showing the percentage
         var KEY_BOX_PADDING = 10; // in pixels
         var KEY_BOX_LINEWIDTH = 3;
+
+        var pieChartSettings = getPieChartSettings();
+
+        function getPieChartSettings() {
+            var initializer = new PieChartInitializer(options.data);
+            var property;
+            for (property in options) {
+                initializer[property] = options[property];
+            }
+            return initializer;
+        }
 
         var fontSizeRange = {
             getFontSizes: function (canvasWidth, canvasHeight) {
@@ -148,7 +151,10 @@ var SERFUEN = (function () {
                 var lineHeight = getLineHeight() + fontSize;
 
                 function getFontSize() {
-                    if (sizeBase < 400) {
+                    if (pieChartSettings.font !== null) {
+                        return pieChartSettings.font;
+                    }
+                    else if (sizeBase < 400) {
                         return 10;
                     }
                     else if (sizeBase >= 400 && sizeBase < 800) {
@@ -234,11 +240,32 @@ var SERFUEN = (function () {
             canvasContext.clearContext();
         };
 
-        this.setData = function (data) {
-            pieChartSettings.setData(data);
+        function recalculateData() {
+            fontMeasures = fontSizeRange.getFontSizes(canvas.width, canvas.height);
+            percentageFontString = fontMeasures.fontSize + "px " + FONT;
+            keyFontString = fontMeasures.fontSize + "px " + FONT;
+            lineHeight = fontMeasures.lineHeight;
             contextData = getContextData();
             schedule = createPieSectorSchedule();
+        }
+
+        this.setData = function (data) {
+            pieChartSettings.setData(data);
+            recalculateData();
         };
+
+        this.setOption = function (key, value) {
+            if (key == "data") {
+                this.setData(value);
+            } else {
+                pieChartSettings[key] = value;
+                recalculateData();
+            }
+        }
+
+        this.getOption = function(key) {
+            return pieChartSettings[key];
+        }
 
         function getContextData() {
             var PIE_RADIUS_RATIO = 0.85,
@@ -289,7 +316,8 @@ var SERFUEN = (function () {
             var widths = pieChartSettings.data.map(function (x) {
                 return getCaptionText(x);
             });
-            var longestCaption = null;
+            var longestCaption = pieChartSettings.minimumCaption;
+
             var i = 0, len = widths.length;
             for (; i < len; i++) {
                 if (!longestCaption || longestCaption.length < widths[i].length) {
@@ -306,12 +334,12 @@ var SERFUEN = (function () {
 
             var i = 0, len = captions.length;
 
+            drawChartKeyRectangle(settings);
+
             for (; i < len; i++) {
                 drawChartKeySquare(i, captions[i], settings);
                 drawChartKeyCaption(i, captions[i], settings);
             }
-
-            drawChartKeyRectangle(settings);
         }
 
         function drawChartKeySquare(index, caption, settings) {
@@ -336,15 +364,17 @@ var SERFUEN = (function () {
 
             var font = schedule[index] == currentSector ? "bold " + keyFontString : keyFontString;
 
-            drawText(font, 'black', caption.caption, { x: x, y: y }, "left", "hanging");
+            drawText(font, "black", caption.caption, { x: x, y: y }, "left", "hanging");
         }
 
         function drawChartKeyRectangle(settings) {
             var ctx = canvasContext.context;
             ctx.beginPath();
+            ctx.fillStyle = "white";
             ctx.strokeStyle = pieChartSettings.circleLineColor;
             ctx.lineWidth = KEY_BOX_LINEWIDTH;
             ctx.rect(settings.boxStartPoint.x, settings.boxStartPoint.y, settings.width, settings.height);
+            ctx.fill();
             ctx.stroke();
         }
 
@@ -418,9 +448,14 @@ var SERFUEN = (function () {
 
         function getCaptions() {
             return pieChartSettings.data.map(function (value, index) {
+                var caption = value.name;
+                if (caption.valueFormatted !== null && caption.valueFormatted !== undefined) {
+                    caption += " - " + value.valueFormatted;
+                }
+
                 return {
-                    caption: value.name + " - " + value.valueFormatted,
-                    color: getColor(index)
+                    caption: caption,
+                    color: schedule[index].color
                 };
             });
         }
@@ -565,45 +600,25 @@ var SERFUEN = (function () {
                 pieChart.setData(data);
                 pieChart.drawPieChart();
             };
+
+            this.option = function (key, value) {
+                if (value !== undefined) {
+                    pieChart.setOption(key, value);
+                    pieChart.drawPieChart();
+                }
+                return pieChart.getOption(key, value);
+            };
         }
 
-    var makePieChart = function (elementId, pieChartSettings) {
+    var makePieChart = function (elementId, options) {
         if (!(elementId in PieChart.cache)) {
-            PieChart.cache.elementId = new PieChart.PieChartContext(elementId, pieChartSettings);
+            PieChart.cache[elementId] = new PieChart.PieChartContext(elementId, options);
+            PieChart.cache[elementId].show();
         }
-        return PieChart.cache.elementId;
+        return PieChart.cache[elementId];
     };
 
     return {
-        // We export a chartHelper function that allows retrieving a default settings object for the pie, with the data passed by the caller
-        getPieChartSettings: PieChartInitializer,
         pieChart: makePieChart,
     };
-} ());
-
-//$(function () {
-//    var data =
-//        [{ value: 46, valueFormatted: "46 million", name: "Spain" },
-//        { value: 80, valueFormatted: "80 million", name: "Germany" },
-//        { value: 66, valueFormatted: "66 million", name: "France" },
-//        { value: 64, valueFormatted: "64 million", name: "United Kingdom" },
-//        { value: 38, valueFormatted: "38 million", name: "Poland" },
-//        { value: 17, valueFormatted: "17 million", name: "Netherlands" },
-//        { value: 11, valueFormatted: "11 million", name: "Belgium" },
-//        { value: 10, valueFormatted: "10 million", name: "Portugal" }].sort(function (x, y) {
-//            return -(x.value - y.value);
-//        });
-
-
-//    var settings = new SERFUEN.getPieChartSettings(data);
-//    settings.showCaptionLocation = "right";
-//    var pie = SERFUEN.pieChart("test_canvas", settings);
-//    pie.show();
-//    $("#boton").click(function () {
-//        var data =
-//            [{ value: 25000, valueFormatted: "25.000 €", name: "Dinero invertido" },
-//            { value: 80000, valueFormatted: "80.000 €", name: "Dinero en depósito" }
-//            ];
-//        pie.setData(data);
-//    });
-//});
+}());

@@ -59,9 +59,15 @@ $(function () {
 
     var calculator = new CHOKIN_FINANCES.MortageCalculator(defaultPrincipal, defaultDownpayment, defaultInterest, defaultYears);
     var data = [];
-    var settings = new SERFUEN.getPieChartSettings(data);
-    settings.colorPalette = ["#006400", "#228B22"];
-    var chartDrawer = SERFUEN.pieChart("graph_interests", settings);
+
+    var options = {
+        data : data,
+        colorPalette: ["#006400", "#228B22"],
+        showCaptionLocation : null,
+        font : 12
+    };
+
+    var chartDrawer = SERFUEN.pieChart("graph_interests", options);
 
     var setSlider = function (setting) {
 
