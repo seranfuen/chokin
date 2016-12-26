@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26014.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chokin", "Chokin\Chokin.csproj", "{26069D18-E82E-4EAB-A7F8-ECCEA732D0C9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chokin.Tests", "Chokin.Tests\Chokin.Tests.csproj", "{9783D473-7860-4A71-9172-016F8A004368}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChokinCF", "ChokinCF\ChokinCF.csproj", "{AF2664B6-14BC-4FF5-B12E-8285251EB68A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChokinCF.Tests", "ChokinCF.Tests\ChokinCF.Tests.csproj", "{B500D215-814E-4E78-AE7B-16CA1BD76814}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{9783D473-7860-4A71-9172-016F8A004368}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9783D473-7860-4A71-9172-016F8A004368}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9783D473-7860-4A71-9172-016F8A004368}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF2664B6-14BC-4FF5-B12E-8285251EB68A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF2664B6-14BC-4FF5-B12E-8285251EB68A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF2664B6-14BC-4FF5-B12E-8285251EB68A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF2664B6-14BC-4FF5-B12E-8285251EB68A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B500D215-814E-4E78-AE7B-16CA1BD76814}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B500D215-814E-4E78-AE7B-16CA1BD76814}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B500D215-814E-4E78-AE7B-16CA1BD76814}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B500D215-814E-4E78-AE7B-16CA1BD76814}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
