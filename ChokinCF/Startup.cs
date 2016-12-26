@@ -13,6 +13,19 @@ namespace ChokinCF
         {
             ConfigureAuth(app);
             InitializeAdmin();
+            InitializeTestUsers();
+        }
+
+        private void InitializeTestUsers()
+        {
+            var context = new ApplicationDbContext();
+            var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
+            var user = new ApplicationUser();
+            user.UserName = "Sergio";
+            user.Email = "sergio@chokin.com";
+            var userPWD = "Sergio99";
+
+            userManager.Create(user, userPWD);
         }
 
         private void InitializeAdmin()
@@ -20,7 +33,7 @@ namespace ChokinCF
             var context = new ApplicationDbContext();
 
             var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(context));
-            var UserManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
+            var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
 
             if (!roleManager.RoleExists("Admin"))
             {
@@ -32,13 +45,13 @@ namespace ChokinCF
                 user.UserName = "Admin";
                 user.Email = "admin@chokin.com";
 
-                string userPWD = "MyAdmin90";
+                var userPWD = "MyAdmin90";
 
-                var chkUser = UserManager.Create(user, userPWD);
+                var chkUser = userManager.Create(user, userPWD);
 
                 if (chkUser.Succeeded)
                 {
-                    UserManager.AddToRole(user.Id, "Admin");
+                    userManager.AddToRole(user.Id, "Admin");
                 }
             }
         }
