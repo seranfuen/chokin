@@ -208,6 +208,22 @@
     <Compile Include="Models\Base\IAuditable.cs" />
     <Compile Include="Models\Base\IId.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\T4\Account.cs">
+      <DependentUpon>Entities.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\T4\AccountType.cs">
+      <DependentUpon>Entities.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\T4\ContextEntityInfo.cs" />
+    <Compile Include="Models\T4\Currency.cs">
+      <DependentUpon>Entities.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\T4\Entities.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Entities.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\T4\ModelEntityIterator.cs" />
     <Compile Include="Models\T4\TemplateManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
