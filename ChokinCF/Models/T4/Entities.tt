@@ -5,8 +5,9 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="Microsoft.VisualStudio.TextTemplating" #>
-<#@ import namespace="ChokinCF.Models" #>
 <#@ import namespace="ChokinCF.Models.T4" #>
+<#@ import namespace="ChokinCF.Models" #>
+<#@ import namespace="ChokinCF.T4Utils" #>
 <# var manager = new TemplateManager(Host, GenerationEnvironment);
    var identityModels = new ModelEntityIterator(typeof(ApplicationDbContext));
 
@@ -22,12 +23,32 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-public partial class <#= entity.EntityName#> 
-{
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.ComponentModel.DataAnnotations;
 
+namespace ChokinCF.Models
+{
+	public partial class <#= entity.EntityName#> : IId, IAuditable
+	{
+        #region ' IAuditable '
+        [ScaffoldColumn(false)]
+        public virtual DateTime CreatedOn { get; set; }
+        [ScaffoldColumn(false)]
+        public virtual string CreatedUserId { get; set; }
+        [ScaffoldColumn(false)]
+        public virtual ApplicationUser CreatedUser { get; set; }
+        [ScaffoldColumn(false)]
+        public virtual DateTime LastModifiedOn { get; set; }
+        [ScaffoldColumn(false)]
+        public virtual string LastModifiedUserId { get; set; }
+        [ScaffoldColumn(false)]
+        public virtual ApplicationUser LastModifiedUser { get; set; }
+        #endregion
+	}
 }
-<#  
+<#
 		manager.Flush();
-   }
-#>
+   } #>
 <# manager.SyncProject(); #>

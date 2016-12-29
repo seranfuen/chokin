@@ -6,7 +6,7 @@ using System.Web;
 
 namespace ChokinCF.Models
 {
-    public class Account
+    public partial class Account
     {
         [ScaffoldColumn(false)]
         public int Id { get; set; }

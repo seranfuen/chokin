@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-namespace ChokinCF.Models.T4
+namespace ChokinCF.T4Utils
 {
     /// <summary>
     /// Adapted from https://damieng.com/blog/2009/11/06/multiple-outputs-from-t4-made-easy-revisited
@@ -46,7 +46,7 @@ namespace ChokinCF.Models.T4
         {
             var path = Path.GetDirectoryName(_host.TemplateFile);
             var pathFileName = Path.Combine(path, _fileName);
-            File.WriteAllText(pathFileName, _template.ToString());
+            File.WriteAllText(pathFileName, _template.ToString().Trim());
             _listFilesAdded.Add(pathFileName);
             _template.Clear();
         }

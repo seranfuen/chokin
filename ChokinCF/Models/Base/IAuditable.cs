@@ -11,7 +11,7 @@ namespace ChokinCF.Models
     /// </summary>
     public interface IAuditable
     {
-        DateTime CreatedOn
+        DateTime CreatedOn 
         {
             get;
             set;

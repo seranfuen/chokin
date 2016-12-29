@@ -7,7 +7,28 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-public partial class AccountType 
-{
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.ComponentModel.DataAnnotations;
 
+namespace ChokinCF.Models
+{
+	public partial class AccountType : IId, IAuditable
+	{
+        #region ' IAuditable '
+        [ScaffoldColumn(false)]
+        public virtual DateTime CreatedOn { get; set; }
+        [ScaffoldColumn(false)]
+        public virtual string CreatedUserId { get; set; }
+        [ScaffoldColumn(false)]
+        public virtual ApplicationUser CreatedUser { get; set; }
+        [ScaffoldColumn(false)]
+        public virtual DateTime LastModifiedOn { get; set; }
+        [ScaffoldColumn(false)]
+        public virtual string LastModifiedUserId { get; set; }
+        [ScaffoldColumn(false)]
+        public virtual ApplicationUser LastModifiedUser { get; set; }
+        #endregion
+	}
 }

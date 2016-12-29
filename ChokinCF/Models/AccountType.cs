@@ -17,7 +17,7 @@ namespace ChokinCF.Models
         Expense
     }
 
-    public class AccountType
+    public partial class AccountType
     {
         [ScaffoldColumn(false)]
         public int Id { get; set; }
