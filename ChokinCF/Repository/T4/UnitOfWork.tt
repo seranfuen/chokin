@@ -24,38 +24,44 @@ using ChokinCF.Models;
 
 namespace ChokinCF.Repository
 {
-    public class RepositoryFactory
-    {
-		private Dictionary<Type, IRepository> _repositoryCache;
+	public sealed class UnitOfWork : IDisposable
+	{
+		private RepositoryFactory _factory;
 		private ApplicationDbContext _context;
+		private bool _disposed;
 
-		public RepositoryFactory(ApplicationDbContext context) 
+		public UnitOfWork() 
 		{
-			_context = context;
-			_repositoryCache = new Dictionary<Type, IRepository>();
+			_context = new ApplicationDbContext();
+			_factory = new RepositoryFactory(_context);
 		}
 
-<#      foreach (var model in identityModels.ContextEntities) { #>
-		public IRepository<<#= model.EntityName#>> <#=model.EntityName#>Repository 
+		public void Commit() 
 		{
-			get 
+			_context.SaveChanges();
+		}
+
+		public void Dispose() 
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);  
+		}
+
+		private void Dispose(bool disposing) 
+		{
+			if (!_disposed)	 
 			{
-				var modelType = typeof(<#=model.EntityName#>);
-				if (!_repositoryCache.ContainsKey(typeof(<#=model.EntityName#>))) 
-				{
-					_repositoryCache[modelType] = new <#=model.EntityName#>Repository(_context);
-				}
-				return (IRepository<<#=model.EntityName#>>)_repositoryCache[modelType];
+				_disposed = true;
+				_context.Dispose();
 			}
 		}
 
-<# }
+		#region ' Repositories '
 
-foreach (var model in identityModels.ContextEntities) { #>
-        public static IRepository<<#= model.EntityName #>> Create<#=model.EntityName#>Repository()
-        {
-            return new <#= model.EntityName #>Repository(new ApplicationDbContext());
-        }
-<#    } #>
-   }
+<# foreach (var model in identityModels.ContextEntities) { #>
+		public IRepository<<#=model.EntityName#>> <#=model.EntityName #>Repository { get { return _factory.<#=model.EntityName #>Repository; } }
+<# } #>
+
+		#endregion
+	}
 }

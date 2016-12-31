@@ -14,22 +14,67 @@ using ChokinCF.Models;
 
 namespace ChokinCF.Repository
 {
-    public static class RepositoryFactory
+    public class RepositoryFactory
     {
-        public static IRepository<Currency> GetCurrencyRepository()
+		private Dictionary<Type, IRepository> _repositoryCache;
+		private ApplicationDbContext _context;
+
+		public RepositoryFactory(ApplicationDbContext context) 
+		{
+			_context = context;
+			_repositoryCache = new Dictionary<Type, IRepository>();
+		}
+
+		public IRepository<Currency> CurrencyRepository 
+		{
+			get 
+			{
+				var modelType = typeof(Currency);
+				if (!_repositoryCache.ContainsKey(typeof(Currency))) 
+				{
+					_repositoryCache[modelType] = new CurrencyRepository(_context);
+				}
+				return (IRepository<Currency>)_repositoryCache[modelType];
+			}
+		}
+
+		public IRepository<Account> AccountRepository 
+		{
+			get 
+			{
+				var modelType = typeof(Account);
+				if (!_repositoryCache.ContainsKey(typeof(Account))) 
+				{
+					_repositoryCache[modelType] = new AccountRepository(_context);
+				}
+				return (IRepository<Account>)_repositoryCache[modelType];
+			}
+		}
+
+		public IRepository<AccountType> AccountTypeRepository 
+		{
+			get 
+			{
+				var modelType = typeof(AccountType);
+				if (!_repositoryCache.ContainsKey(typeof(AccountType))) 
+				{
+					_repositoryCache[modelType] = new AccountTypeRepository(_context);
+				}
+				return (IRepository<AccountType>)_repositoryCache[modelType];
+			}
+		}
+
+        public static IRepository<Currency> CreateCurrencyRepository()
         {
-            var context = new ApplicationDbContext();
-            return null;
+            return new CurrencyRepository(new ApplicationDbContext());
         }
-        public static IRepository<Account> GetAccountRepository()
+        public static IRepository<Account> CreateAccountRepository()
         {
-            var context = new ApplicationDbContext();
-            return null;
+            return new AccountRepository(new ApplicationDbContext());
         }
-        public static IRepository<AccountType> GetAccountTypeRepository()
+        public static IRepository<AccountType> CreateAccountTypeRepository()
         {
-            var context = new ApplicationDbContext();
-            return null;
+            return new AccountTypeRepository(new ApplicationDbContext());
         }
-    }
+   }
 }

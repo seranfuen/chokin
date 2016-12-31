@@ -18,7 +18,7 @@ namespace ChokinCF.Repository
             _entitySet = context.Set<T>();
         }
 
-        public virtual List<T> Entities
+        public virtual IEnumerable<T> Entities
         {
             get
             {
@@ -31,20 +31,12 @@ namespace ChokinCF.Repository
             return _entitySet.Add(entity);
         }
 
-        public virtual T Create()
-        {
-            var newEntity = new T();
-            InitializeEntity(newEntity);
-            AddEntity(newEntity);
-            return newEntity;
-        }
-
         public virtual void DeleteEntity(T entity)
         {
             _entitySet.Remove(entity);
         }
 
-        public virtual List<T> FindByPredicate(Func<T, bool> predicate)
+        public virtual IEnumerable<T> FindByPredicate(Func<T, bool> predicate)
         {
             return Entities.Where(predicate).ToList();
         }
@@ -54,9 +46,10 @@ namespace ChokinCF.Repository
             _context.SaveChanges();
         }
 
-        protected virtual void InitializeEntity(T entity)
+        public void Dispose()
         {
-            
+            _context.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
