@@ -52,7 +52,7 @@ namespace ChokinCF.Repository
 <# }
 
 foreach (var model in identityModels.ContextEntities) { #>
-        public static IRepository<<#= model.EntityName #>> Create<#=model.EntityName#>Repository()
+        public static <#= model.EntityName #>Repository Create<#=model.EntityName#>Repository()
         {
             return new <#= model.EntityName #>Repository(new ApplicationDbContext());
         }

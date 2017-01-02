@@ -192,9 +192,11 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\ControllerBase.cs" />
     <Compile Include="Controllers\CurrenciesController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\TestController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -224,8 +226,10 @@
       <DependentUpon>Entities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\T4\ModelEntityIterator.cs" />
+    <Compile Include="Repository\AccountRepository.cs" />
     <Compile Include="Repository\Base\IRepository.cs" />
     <Compile Include="Repository\Base\RepositoryBase.cs" />
+    <Compile Include="Repository\CurrencyRepository.cs" />
     <Compile Include="Repository\T4\Account.cs">
       <DependentUpon>Repositories.tt</DependentUpon>
     </Compile>
@@ -294,6 +298,7 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
+    <Content Include="Scripts\app\ajs_test.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
@@ -349,10 +354,11 @@
     <Content Include="Views\Currencies\Details.cshtml" />
     <Content Include="Views\Currencies\Edit.cshtml" />
     <Content Include="Views\Currencies\Index.cshtml" />
+    <Content Include="Views\Test\Angular.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Views\Currency\" />
+    <Folder Include="Views\ControllerBase\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -384,7 +390,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>55213</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:55213/</IISUrl>
+          <IISUrl>http://localhost:15000/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

@@ -64,15 +64,15 @@ namespace ChokinCF.Repository
 			}
 		}
 
-        public static IRepository<Currency> CreateCurrencyRepository()
+        public static CurrencyRepository CreateCurrencyRepository()
         {
             return new CurrencyRepository(new ApplicationDbContext());
         }
-        public static IRepository<Account> CreateAccountRepository()
+        public static AccountRepository CreateAccountRepository()
         {
             return new AccountRepository(new ApplicationDbContext());
         }
-        public static IRepository<AccountType> CreateAccountTypeRepository()
+        public static AccountTypeRepository CreateAccountTypeRepository()
         {
             return new AccountTypeRepository(new ApplicationDbContext());
         }

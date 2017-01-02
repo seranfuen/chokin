@@ -1,0 +1,16 @@
+﻿
+@{
+    ViewBag.Title = "Angular";
+}
+
+<h2>Angular</h2>
+
+<div ng-app="">
+    <input type="text" ng-model="name" />
+    {{ name }}
+</div>
+
+@section scripts {
+    @Scripts.Render("~/Scripts/angular.js")
+    @Scripts.Render("~/Scripts/app/ajs_test.js")
+}   

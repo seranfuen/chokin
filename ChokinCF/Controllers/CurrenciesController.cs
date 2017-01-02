@@ -6,18 +6,26 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Routing;
 using ChokinCF.Models;
+using ChokinCF.Repository;
 
 namespace ChokinCF.Controllers
 {
-    public class CurrenciesController : Controller
+    public class CurrenciesController : ControllerBase
     {
-        private ApplicationDbContext db = new ApplicationDbContext();
+        private CurrencyRepository _repository = RepositoryFactory.CreateCurrencyRepository();
+
+        protected override void Initialize(RequestContext requestContext)
+        {
+            base.Initialize(requestContext);
+            InitializeRepository(_repository);
+        }
 
         [Authorize]
         public ActionResult Index()
         {
-            return View(db.Currencies.ToList());
+            return View(_repository.Entities);
         }
 
         [Authorize]        
@@ -27,7 +35,7 @@ namespace ChokinCF.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Currency currency = db.Currencies.Find(id);
+            Currency currency = _repository.FindById(id.Value);
             if (currency == null)
             {
                 return HttpNotFound();
@@ -48,9 +56,16 @@ namespace ChokinCF.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Currencies.Add(currency);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                if (_repository.HasCurrency(currency.Name))
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest); // testing purpose, show custom error page later
+                }
+                else
+                {
+                    _repository.AddEntity(currency);
+                    _repository.SaveChanges();
+                    return RedirectToAction("Index");
+                }
             }
 
             return View(currency);
@@ -63,11 +78,11 @@ namespace ChokinCF.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Currency currency = db.Currencies.Find(id);
+            Currency currency = _repository.FindById(id.Value);
             if (currency == null)
             {
                 return HttpNotFound();
-            }
+            } 
             return View(currency);
         }
 
@@ -78,8 +93,14 @@ namespace ChokinCF.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(currency).State = EntityState.Modified;
-                db.SaveChanges();
+                currency = _repository.FindById(currency.Id);
+                UpdateModel<Currency>(currency);
+                _repository.Edit(currency);
+                if (_repository.HasCurrencyWithName(currency))
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest); // testing purpose, show custom error page later
+                }
+                _repository.SaveChanges();
                 return RedirectToAction("Index");
             }
             return View(currency);
@@ -92,7 +113,7 @@ namespace ChokinCF.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Currency currency = db.Currencies.Find(id);
+            Currency currency = _repository.FindById(id.Value);
             if (currency == null)
             {
                 return HttpNotFound();
@@ -105,9 +126,9 @@ namespace ChokinCF.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Currency currency = db.Currencies.Find(id);
-            db.Currencies.Remove(currency);
-            db.SaveChanges();
+            Currency currency = _repository.FindById(id);
+            _repository.DeleteEntity(currency);
+            _repository.SaveChanges();
             return RedirectToAction("Index");
         }
 
@@ -115,7 +136,7 @@ namespace ChokinCF.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                _repository.Dispose();
             }
             base.Dispose(disposing);
         }
