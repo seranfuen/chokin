@@ -14,6 +14,7 @@ namespace ChokinCF.Models
             : base("DefaultConnection", throwIfV1Schema: false)
         {
             Database.SetInitializer(new DropCreateDatabaseIfModelChanges<ApplicationDbContext>());
+            Configuration.ProxyCreationEnabled = false;
         }
 
         public static ApplicationDbContext Create()
