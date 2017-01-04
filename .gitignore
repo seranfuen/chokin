@@ -334,3 +334,9 @@ ModelManifest.xml
 /ChokinCF/Content/bootstrap.min.css.map
 /ChokinCF/Content/bootstrap-theme.css
 /ChokinCF/Content/bootstrap-theme.css.map
+/ChokinCF/bower_components
+/ChokinCF/Scripts/angular
+/ChokinCF/Scripts/bootstrap
+/ChokinCF/Scripts/jquery
+/ChokinCF/Scripts/jquery-validation-unobtrusive
+/ChokinCF/Scripts/respond

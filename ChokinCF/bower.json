@@ -1,0 +1,29 @@
+{
+  "name": "chokin",
+  "homepage": "https://github.com/seranfuen/chokin",
+  "authors": [
+    "Sergio <seranfuen@gmail.com>"
+  ],
+  "description": "Web app for managing personal finances",
+  "main": "",
+  "keywords": [
+    "c#",
+    "javascript",
+    "banking",
+    "accounting",
+    "finanves",
+    "saving",
+    "angularjs",
+    "asp.net",
+    "mvc"
+  ],
+  "license": "GNU",
+  "dependencies": {
+    "jquery": "^3.1.1",
+    "jquery-validation": "^1.16.0",
+    "jquery-validation-unobtrusive": "^3.2.6",
+    "bootstrap": "^3.3.7",
+    "respond": "respond-minmax#^1.4.2",
+    "angular": "^1.6.1"
+  }
+}
