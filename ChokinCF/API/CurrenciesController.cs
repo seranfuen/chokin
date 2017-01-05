@@ -7,22 +7,35 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Controllers;
 using System.Web.Http.Description;
 using ChokinCF.Models;
 using ChokinCF.Repository;
 
 namespace ChokinCF.API
 {
-    public class CurrenciesController : ApiController
+    public class CurrenciesController : ApiControllerBase
     {
-        private ApplicationDbContext db = new ApplicationDbContext();
+        private ApplicationDbContext db = new ApplicationDbContext(); // remove after switching all operations to repository
+
+        private ICurrencyRepository _repository;
+
+        public CurrenciesController(ICurrencyRepository repository)
+        {
+            _repository = repository;
+        }
+
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+            InitializeRepository(_repository);
+        }
 
         [Authorize(Roles = "Admin")]
         // GET: api/Currencies
         public IEnumerable<Currency> GetCurrencies()
         {
-            var repository = RepositoryFactory.CreateCurrencyRepository();
-            return repository.Entities;
+            return _repository.Entities;
         }
 
         // GET: api/Currencies/5

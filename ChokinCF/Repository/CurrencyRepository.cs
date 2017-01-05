@@ -6,7 +6,7 @@ using System.Web;
 
 namespace ChokinCF.Repository
 {
-    public partial class CurrencyRepository
+    public partial class CurrencyRepository : ICurrencyRepository
     {
         public bool HasCurrency(string name)
         {
