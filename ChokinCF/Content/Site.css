@@ -22,3 +22,11 @@ select,
 textarea {
     max-width: 280px;
 }
+
+.entity-list-body tr {
+    cursor: pointer !important;
+}
+
+.entity-list-body tr:hover {
+    background-color: lightyellow;
+}

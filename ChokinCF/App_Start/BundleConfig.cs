@@ -19,6 +19,9 @@ namespace ChokinCF
             bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
                         "~/Scripts/modernizr/modernizr.js"));
 
+            bundles.Add(new ScriptBundle("~/bundles/angular").Include(
+            "~/Scripts/angular/angular.min.js"));
+
             bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
                       "~/Scripts/bootstrap/js/bootstrap.min.js",
                       "~/Scripts/respond/respond.min.js"));

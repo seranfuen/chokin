@@ -16,8 +16,6 @@ namespace ChokinCF.API
 {
     public class CurrenciesController : ApiControllerBase
     {
-        private ApplicationDbContext db = new ApplicationDbContext(); // remove after switching all operations to repository
-
         private ICurrencyRepository _repository;
 
         public CurrenciesController(ICurrencyRepository repository)
@@ -42,7 +40,7 @@ namespace ChokinCF.API
         [ResponseType(typeof(Currency))]
         public IHttpActionResult GetCurrency(int id)
         {
-            Currency currency = db.Currencies.Find(id);
+            Currency currency = _repository.FindById(id);
             if (currency == null)
             {
                 return NotFound();
@@ -65,15 +63,14 @@ namespace ChokinCF.API
                 return BadRequest();
             }
 
-            db.Entry(currency).State = EntityState.Modified;
-
+            _repository.Edit(currency);
             try
             {
-                db.SaveChanges();
+                _repository.SaveChanges();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CurrencyExists(id))
+                if (_repository.FindById(id) == null)
                 {
                     return NotFound();
                 }
@@ -95,8 +92,8 @@ namespace ChokinCF.API
                 return BadRequest(ModelState);
             }
 
-            db.Currencies.Add(currency);
-            db.SaveChanges();
+            _repository.AddEntity(currency);
+            _repository.SaveChanges();
 
             return CreatedAtRoute("DefaultApi", new { id = currency.Id }, currency);
         }
@@ -105,14 +102,14 @@ namespace ChokinCF.API
         [ResponseType(typeof(Currency))]
         public IHttpActionResult DeleteCurrency(int id)
         {
-            Currency currency = db.Currencies.Find(id);
+            Currency currency = _repository.FindById(id);
             if (currency == null)
             {
                 return NotFound();
             }
 
-            db.Currencies.Remove(currency);
-            db.SaveChanges();
+            _repository.DeleteEntity(currency);
+            _repository.SaveChanges();
 
             return Ok(currency);
         }
@@ -121,14 +118,9 @@ namespace ChokinCF.API
         {
             if (disposing)
             {
-                db.Dispose();
+                _repository.Dispose();
             }
             base.Dispose(disposing);
-        }
-
-        private bool CurrencyExists(int id)
-        {
-            return db.Currencies.Count(e => e.Id == id) > 0;
         }
     }
 }

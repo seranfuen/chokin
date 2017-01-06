@@ -3,14 +3,41 @@
     ViewBag.Title = "Angular";
 }
 
-<h2>Angular</h2>
+<h2>Currencies</h2>
 
-<div ng-app="">
-    <input type="text" ng-model="name" />
-    {{ name }}
+
+<div class="col-md-6" ng-app="angularTest" ng-controller="ListCurrencies">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Symbol</th>
+                <th>Country</th>
+            <tr>
+        </thead>
+        <tbody class="entity-list-body">
+            <tr ng-cloak ng-repeat="currency in currencies" ng-click="entryClicked($event, currency.Id)">
+                <td>
+                    <span ng-if="!isEditing[currency.Id]">{{currency.Name}}</span>
+                    <input ng-if="isEditing[currency.Id]" ng-model="currency.Name" />
+                </td>
+                <td>
+                    <span ng-if="!isEditing[currency.Id]">{{currency.Symbol}}</span>
+                    <input ng-if="isEditing[currency.Id]" ng-model="currency.Symbol" />
+                </td>
+                <td>
+                    <span ng-if="!isEditing[currency.Id]">{{currency.Country}}</span>
+                    <input ng-if="isEditing[currency.Id]" ng-model="currency.Country" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="row">
+    
 </div>
 
 @section scripts {
-    @Scripts.Render("~/Scripts/angular.js")
-    @Scripts.Render("~/Scripts/app/ajs_test.js")
+    @Scripts.Render("~/Scripts/app/angular_test.js")
 }   
