@@ -30,3 +30,9 @@ textarea {
 .entity-list-body tr:hover {
     background-color: lightyellow;
 }
+
+.delete-entity-button, add-entity-button {
+    vertical-align: middle !important;
+    text-align: center;
+    height: 12px;
+}

@@ -14,7 +14,8 @@ gulp.task("copy", function () {
         "jquery": "jquery/dist/*.{js,map}",
         "jquery-validation": "jquery-validation/jquery.validate.js",
         "jquery-validation-unobtrusive": "jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
-        "respond": "respond/dest/respond.min.js"
+        "respond": "respond/dest/respond.min.js",
+        "bootbox": "bootbox.js/bootbox.js"
     }
 
     for (var destinationDir in bower) {

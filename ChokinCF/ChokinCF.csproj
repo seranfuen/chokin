@@ -312,6 +312,7 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\images\cancel.png" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -337,6 +338,7 @@
     </Content>
     <Content Include="Scripts\angular\angular.min.js" />
     <Content Include="Scripts\app\angular_test.js" />
+    <Content Include="Scripts\bootbox\bootbox.js" />
     <Content Include="Scripts\bootstrap\css\bootstrap-theme.css" />
     <Content Include="Scripts\bootstrap\css\bootstrap-theme.min.css" />
     <Content Include="Scripts\bootstrap\css\bootstrap.css" />
