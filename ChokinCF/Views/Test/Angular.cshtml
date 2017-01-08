@@ -1,13 +1,11 @@
-﻿
-@{
+﻿@{
     ViewBag.Title = "Angular";
 }
 
 <h2>Currencies</h2>
 
-
-<div class="col-md-6" ng-app="angularTest" ng-controller="ListCurrencies">
-    <table class="table">
+<div class="col-md-6" ng-app="angularTest" ng-controller="SpreadsheetModeEdit">
+    <table class="table" enter-pressed="endEdit(true)" escape-pressed="endEdit(false)">
         <thead>
             <tr>
                 <th ng-if="isEditMode() || isAddingMode()"></th>
@@ -17,7 +15,7 @@
             <tr>
         </thead>
         <tbody class="entity-list-body">
-            <tr ng-cloak ng-repeat="currency in currencies" ng-click="entryClicked($event, currency.Id)">
+            <tr ng-cloak ng-repeat="currency in currencies" ng-dblclick="startEdit($event, currency.Id)">
                 <td ng-if="isEditMode() && !isAddingMode()">
                     <img ng-click="confirmDelete(currency.Id)" ng-if="isEditing[currency.Id]" class="delete-entity-button" src="~/Content/images/cancel.png" />
                 </td>
@@ -48,4 +46,5 @@
 
 @section scripts {
     @Scripts.Render("~/Scripts/app/angular_test.js")
-}   
+    @Scripts.Render("~/Scripts/app/alerts.js")
+}

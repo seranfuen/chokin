@@ -1,30 +1,61 @@
 ﻿(function () {
     'use strict';
-
     var app = angular.module("angularTest", []);
-    app.controller("ListCurrencies", function ($scope, $http) {
-        $scope.isEditing = [];
-
+    app.controller("SpreadsheetModeEdit", function ($scope, $http) {
         var isAdding = false,
             currentEditingEntity,
-            newEntityId = 90;
-       
-        function stopEditing(commitData) {
-            $scope.isEditing[currentEditingId] = false;
-            if (currentEditingId !== null && commitData === true && !angular.equals(currentEditingEntity, getEntity(currentEditingId))) {
-                saveCurrent(currentEditingId);
-            } else { // restore
-                var editing = getEntity(currentEditingId);
-                angular.copy(currentEditingEntity, editing);
+            newEntityId = 0,
+            currentEditing = null,
+            currentEditingId = null;
+
+        $scope.isEditing = []; // associative array Id --> boolean that establishes whether the current entity is being edited 
+
+        var endEdit = function (commitData) {
+            /// <summary>
+            /// Causes the edition on the current row to end, returning to a clean state. If commitData is true, it will attempt to save the data. If false,
+            /// it will roll back all changes.
+            /// 
+            /// The edit state will not be switched off if commitData is true and the data is not valid. In this case, an error will be shown and the user will be able
+            /// to correct the data, or discard the data
+            /// </summary>
+            /// <param name="commitData" type="type">if true, all changes will be saved. If false, all changes will be rolled back</param>
+            if (currentEditingId !== null) {
+                $scope.isEditing[currentEditingId] = false;
+                if (commitData === true && (isAdding === true || !angular.equals(currentEditingEntity, getEntity(currentEditingId)))) {
+                    saveCurrent(currentEditingId);
+                } else if (isAdding === true) { // remove entity being added
+                    removeEntity(currentEditingId);
+                } else { // restore entity being edited
+                    var editing = getEntity(currentEditingId);
+                    angular.copy(currentEditingEntity, editing);
+                }
+                isAdding = false;
+                $scope.$apply();
             }
             currentEditing = currentEditingId = null;
         }
 
+        $scope.endEdit = endEdit;
+
+        function removeEntity(id) {
+            var indexAdding = $scope.currencies.findIndex(function (element) {
+                return element.Id == id;
+            });
+            $scope.currencies.splice(indexAdding, 1);
+        }
+
         function saveCurrent(id) {
             var savingEntity = getEntity(id);
-            $http.put("/api/Currencies/" + id, angular.toJson(savingEntity)).then(function (response) {
-                window.alert(response.status);
-            });
+            var jsonEntity =  angular.toJson(savingEntity);
+            if (id === newEntityId) {
+                $http.post("/api/Currencies/", jsonEntity).then(function (response) {
+                    window.alert(response.status);
+                });
+            } else {
+                $http.put("/api/Currencies/" + id, jsonEntity).then(function (response) {
+                    window.alert(response.status);
+                });
+            }
         }
 
         function getEntity(id) {
@@ -39,28 +70,24 @@
             });
         }
 
-        $(document).keyup(function (e) {
-            if (e.keyCode == 27) {
-                stopEditing(false);
-                $scope.$apply();
-            }
-        });
-
         $(document).click(function (event) {
             if (currentEditingId !== null) {
                 if (!$(event.target).closest(currentEditing).length) {
-                    stopEditing(true);
+                    endEdit(true);
                     $scope.$apply();
                 }
             }
         });
 
-        var currentEditing = null,
-            currentEditingId = null;
-
-        $scope.entryClicked = function ($event, id) {
-            if (currentEditingId != id) {
-                stopEditing();
+        $scope.startEdit = function ($event, id) {
+            /// <summary>
+            /// Sets the row edit mode on. Allows modifying the data on the row whose Id is passed. If another row is being edited,
+            /// the changes will be commited
+            /// </summary>
+            /// <param name="$event" type="type">the event data</param>
+            /// <param name="id" type="type">the Id of the row to modify</param>
+            if (currentEditingId !== id) {
+                endEdit(true);
             }
             editMode(id);
             currentEditing = $event.delegateTarget;
@@ -109,7 +136,8 @@
             bootbox.confirm("Do you wish to delete this entry?", function (result) {
                 if (result) {
                     deleteEntity(id);
-                    delete $scope.currencies.id;
+                    endEdit(id);
+                    removeEntity(currentEditingId);
                 }
             });
         };
@@ -118,6 +146,8 @@
             $scope.currencies =  angular.fromJson(data.data);
         });
     });
+
+    // DIRECTIVES
 
     app.directive("focusOn", function($timeout) {
         return {
@@ -130,6 +160,26 @@
                     });
                 });
             }
+        };
+    });
+
+    app.directive("escapePressed", function() {
+        return function(scope, element, attributes) {
+            $(element).keyup(function (event) {
+                if (event.keyCode === 27) {
+                    scope.$eval(attributes.escapePressed);
+                }
+            });
+        };
+    });
+
+    app.directive("enterPressed", function () {
+        return function (scope, element, attributes) {
+            $(element).keyup(function (event) {
+                if (event.keyCode === 13) {
+                    scope.$eval(attributes.enterPressed);
+                }
+            });
         };
     });
 })();
