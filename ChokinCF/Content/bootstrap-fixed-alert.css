@@ -1,23 +1,10 @@
-﻿.bootstrap-fixed-alert {
-    padding: 10px;
-    position: fixed;
-    width: 50%;
-    margin-left: auto;
-    z-index: 1000;
+﻿.bootstrap-fixed-alert-container {
+    text-align: center;
 }
 
-.bootstrap-fixed-alert-left {
-    left: 10px;
-}
-
-.bootstrap-fixed-alert-right {
-    right: 10px;
-}
-
-.bootstrap-fixed-alert-top {
-    top: 60px;
-}
-
-.bootstrap-fixed-alert-bottom {
-    bottom: 10px;
+.bootstrap-fixed-alert {
+    display: inline-block;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    margin: 5px;
 }
