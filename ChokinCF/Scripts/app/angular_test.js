@@ -1,13 +1,29 @@
-﻿(function () {
+﻿var serfuen = serfuen || {};
+
+(function () {
+    'use strict';
+    serfuen.utils = {
+        combinePath: function () {
+            var elements = Array.from(arguments);
+            return elements.join("/");
+        }
+    };
+})();
+
+
+(function () {
     'use strict';
     var app = angular.module("angularTest", []);
-    app.controller("SpreadsheetModeEdit", function ($scope, $http) {
+    app.controller("SpreadsheetModeEdit", function ($scope, $http, $attrs) {
         var isAdding = false,
             currentEditingEntity,
             newEntityId = 0,
             currentEditing = null,
-            currentEditingId = null;
+            currentEditingId = null,
+            repositoryBaseUrl = "",
+            combinePath = serfuen.utils.combinePath;
 
+        repositoryBaseUrl = "/" + combinePath("api", $attrs.entityRepository);
         $scope.isEditing = []; // associative array Id --> boolean that establishes whether the current entity is being edited 
 
         var endEdit = function (commitData) {
@@ -48,11 +64,11 @@
             var savingEntity = getEntity(id);
             var jsonEntity =  angular.toJson(savingEntity);
             if (id === newEntityId) {
-                $http.post("/api/Currencies/", jsonEntity).then(function (response) {
+                $http.post(repositoryBaseUrl, jsonEntity).then(function (response) {
                     window.alert(response.status);
                 });
             } else {
-                $http.put("/api/Currencies/" + id, jsonEntity).then(function (response) {
+                $http.put(combinePath(repositoryBaseUrl, id), jsonEntity).then(function (response) {
                     window.alert(response.status);
                 });
             }
@@ -65,7 +81,7 @@
         }
 
         function deleteEntity(id) {
-            $http.delete("/api/Currencies/" + id).then(function(response) {
+            $http.delete(combinePath(repositoryBaseUrl, id)).then(function (response) {
                 window.alert(response.status);
             });
         }
@@ -142,7 +158,7 @@
             });
         };
 
-        $http.get("/api/currencies").then(function (data) {
+        $http.get(repositoryBaseUrl).then(function (data) {
             $scope.currencies =  angular.fromJson(data.data);
         });
     });
