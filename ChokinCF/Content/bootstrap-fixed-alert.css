@@ -1,10 +1,11 @@
 ﻿.bootstrap-fixed-alert-container {
     text-align: center;
+    position: absolute;
 }
 
 .bootstrap-fixed-alert {
     display: inline-block;
     padding-bottom: 5px;
     padding-top: 5px;
-    margin: 5px;
+    margin-top: 10px;
 }

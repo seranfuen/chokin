@@ -1,6 +1,4 @@
-﻿// TODO: the animation when showing/hiding should be a parameter too
-
-(function () {
+﻿(function () {
     'use strict';
 
     var VERSION = "0.0.1",
