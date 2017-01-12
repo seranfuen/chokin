@@ -24,15 +24,21 @@ textarea {
 }
 
 .entity-list-body tr {
-    cursor: pointer !important;
+    cursor: pointer;
 }
 
-.entity-list-body tr:hover {
+.entity-row-editing {
+    cursor: default !important;
+    background-color: snow;
+}
+
+.entity-row:hover {
     background-color: lightyellow;
 }
 
-.delete-entity-button, add-entity-button {
+.action-button {
     vertical-align: middle !important;
     text-align: center;
-    height: 12px;
+    height: 16px;
+    cursor: pointer;
 }

@@ -15,12 +15,12 @@
             <tr>
         </thead>
         <tbody class="entity-list-body">
-            <tr ng-cloak ng-repeat="currency in currencies" ng-dblclick="startEdit($event, currency.Id)">
-                <td ng-if="isEditMode() && !isAddingMode()">
-                    <img ng-click="confirmDelete(currency.Id)" ng-if="isEditing[currency.Id]" class="delete-entity-button" src="~/Content/images/cancel.png" />
+            <tr ng-cloak ng-repeat="currency in currencies" ng-click="startEdit($event, currency.Id)" ng-class="isEditing[currency.Id] ? 'entity-row-editing' : 'entity-row'">
+                <td ng-if="isEditMode() && !isAddingMode()" class="action-button-container">
+                    <img ng-click="confirmDelete(currency.Id)" ng-if="isEditing[currency.Id]" class="delete-entity-button action-button-normal action-button" src="~/Content/images/cancel.png" />
                 </td>
                 <td ng-if="isAddingMode()">
-                    <img ng-click="confirmAdd()" ng-if="isNew(currency.Id)" class="add-entity-button" src="~/Content/images/add.png" />
+                    <img ng-click="confirmAdd()" ng-if="isNew(currency.Id)" class="add-entity-button action-button-normal action-button" src="~/Content/images/add.png" />
                 </td>
                 <td>
                     <span ng-if="!isEditing[currency.Id]">{{currency.Name}}</span>
