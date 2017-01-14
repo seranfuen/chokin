@@ -15,7 +15,8 @@ gulp.task("copy", function () {
         "jquery-validation": "jquery-validation/jquery.validate.js",
         "jquery-validation-unobtrusive": "jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
         "respond": "respond/dest/respond.min.js",
-        "bootbox": "bootbox.js/bootbox.js"
+        "bootbox": "bootbox.js/bootbox.js",
+        "jquery-ui" : "jquery-ui/jquery-ui.min.js"
     }
 
     for (var destinationDir in bower) {

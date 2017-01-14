@@ -4,7 +4,7 @@
 
 <h2>Currencies</h2>
 
-<div class="col-md-6" ng-app="angularTest" ng-controller="SpreadsheetModeEdit" entity-repository="currencies">
+<div id="main" class="col-md-6" ng-app="angularTest" ng-controller="SpreadsheetModeEdit" entity-repository="currencies" entity-name="currency">
     <table class="table" enter-pressed="endEdit(true)" escape-pressed="endEdit(false)">
         <thead>
             <tr>
@@ -15,29 +15,32 @@
             <tr>
         </thead>
         <tbody class="entity-list-body">
-            <tr ng-cloak ng-repeat="currency in currencies" ng-click="startEdit($event, currency.Id)" ng-class="isEditing[currency.Id] ? 'entity-row-editing' : 'entity-row'">
+            <tr ng-cloak ng-repeat="currency in currencies" ng-click="startEdit($event, currency.Id)" ng-class="getEditingClass(currency.Id)">
                 <td ng-if="isEditMode() && !isAddingMode()" class="action-button-container">
-                    <img ng-click="confirmDelete(currency.Id)" ng-if="isEditing[currency.Id]" class="delete-entity-button action-button-normal action-button" src="~/Content/images/cancel.png" />
+                    <img tooltip ng-click="confirmDelete(currency.Id)" ng-if="isEditing[currency.Id]" class="delete-entity-button action-button-normal action-button" src="~/Content/images/cancel.png" title="Click to delete this row" />
                 </td>
                 <td ng-if="isAddingMode()">
-                    <img ng-click="confirmAdd()" ng-if="isNew(currency.Id)" class="add-entity-button action-button-normal action-button" src="~/Content/images/add.png" />
+                    <img ng-click="endEdit(true)" tooltip title="Click to confirm adding a new row" ng-if="isNew(currency.Id)" class="add-entity-button action-button-normal action-button" src="~/Content/images/add.png" />
                 </td>
                 <td>
                     <span ng-if="!isEditing[currency.Id]">{{currency.Name}}</span>
                     <input focus-on="isEditing[currency.Id]" ng-if="isEditing[currency.Id]" ng-model="currency.Name" />
+                    <span class="text-danger" ng-if="isEditing[currency.Id]">{{modelStatus.Name}}</span>
                 </td>
                 <td>
                     <span ng-if="!isEditing[currency.Id]">{{currency.Symbol}}</span>
                     <input ng-if="isEditing[currency.Id]" ng-model="currency.Symbol" />
-                </td>
+                    <span class="text-danger" ng-if="isEditing[currency.Id]">{{modelStatus.Symbol}}</span>
+                </td>   
                 <td>
                     <span ng-if="!isEditing[currency.Id]">{{currency.Country}}</span>
                     <input ng-if="isEditing[currency.Id]" ng-model="currency.Country" />
+                    <span class="text-danger" ng-if="isEditing[currency.Id]">{{modelStatus.Country}}</span>
                 </td>
             </tr>
         </tbody>
     </table>
-    <div ng-if="!isEditMode() && !isAddingMode()" ng-click="addEntity($event)" class="btn btn-primary">New</div>
+    <div ng-if="!isEditMode() && !isAddingMode()" ng-click="addEntity($event)" tooltip class="btn btn-primary" title="Add a new row">New</div>
 </div>
 
 <div class="row">

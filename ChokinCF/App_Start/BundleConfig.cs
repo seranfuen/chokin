@@ -1,4 +1,6 @@
-﻿using System.Web;
+﻿using System;
+using System.Collections.Generic;
+using System.Web;
 using System.Web.Optimization;
 
 namespace ChokinCF
@@ -8,8 +10,11 @@ namespace ChokinCF
         // For more information on bundling, visit https://go.microsoft.com/fwlink/?LinkId=301862
         public static void RegisterBundles(BundleCollection bundles)
         {
-            bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
-                        "~/Scripts/jquery/jquery.min.js"));
+            var jQueryBundle = new ScriptBundle("~/bundles/jquery");
+            jQueryBundle.Orderer = new FIFOBundleOrderer();
+            jQueryBundle.Include("~/Scripts/jquery/jquery.min.js").Include("~/Scripts/jquery-ui/jquery-ui.min.js");
+
+            bundles.Add(jQueryBundle);
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
                         "~/Scripts/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"));
@@ -26,9 +31,18 @@ namespace ChokinCF
                       "~/Scripts/bootstrap/js/bootstrap.min.js",
                       "~/Scripts/respond/respond.min.js"));
 
+
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Scripts/bootstrap/css/bootstrap.css",
                       "~/Content/site.css"));
+        }
+    }
+
+    public class FIFOBundleOrderer : IBundleOrderer
+    {
+        public IEnumerable<BundleFile> OrderFiles(BundleContext context, IEnumerable<BundleFile> files)
+        {
+            return files;
         }
     }
 }

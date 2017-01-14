@@ -23,9 +23,12 @@
             combinePath = serfuen.utils.combinePath;
 
         repositoryBaseUrl = "/" + combinePath("api", $attrs.entityRepository);
-        $scope.isEditing = []; // associative array Id --> boolean that establishes whether the current entity is being edited 
+        $scope.isEditing = []; // associative array Id --> boolean that establishes whether the current entity is being edited
+        $scope.getEditingClass = function (entityId) { // tests if the entity with the ID given is being edited
+            return $scope.isEditing[entityId] ? "entity-row-editing" : "entity-row";
+        };
 
-        var endEdit = function (commitData) {
+        var endEdit = function (commitData, callbackOnSaved) {
             /// <summary>
             /// Causes the edition on the current row to end, returning to a clean state. If commitData is true, it will attempt to save the data. If false,
             /// it will roll back all changes.
@@ -35,19 +38,17 @@
             /// </summary>
             /// <param name="commitData" type="type">if true, all changes will be saved. If false, all changes will be rolled back</param>
             if (currentEditingId !== null) {
-                $scope.isEditing[currentEditingId] = false;
                 if (commitData === true && (isAdding === true || !angular.equals(currentEditingEntity, getEntity(currentEditingId)))) {
-                    saveCurrent(currentEditingId);
+                    saveCurrent(currentEditingId, callbackOnSaved);
                 } else if (isAdding === true) { // remove entity being added
                     removeEntity(currentEditingId);
                 } else { // restore entity being edited
                     var editing = getEntity(currentEditingId);
                     angular.copy(currentEditingEntity, editing);
+                    $scope.isEditing[currentEditingId] = false;
                 }
-                isAdding = false;
                 $scope.$apply();
             }
-            currentEditing = currentEditingId = null;
         }
 
         $scope.endEdit = endEdit;
@@ -56,22 +57,50 @@
             var indexAdding = $scope.currencies.findIndex(function (element) {
                 return element.Id == id;
             });
+            $scope.isEditing[id] = false;
+            isAdding = false;
             $scope.currencies.splice(indexAdding, 1);
         }
 
-        function saveCurrent(id) {
+        function saveCurrent(id, callbackOnSaved) {
             var savingEntity = getEntity(id);
             var jsonEntity =  angular.toJson(savingEntity);
             if (id === newEntityId) {
-                $http.post(repositoryBaseUrl, jsonEntity).then(function (response) {
-                    window.alert(response.status);
-                });
+                $http.post(repositoryBaseUrl, jsonEntity).then(saveCurrentSuccess, saveCurrentFailure);
             } else {
-                $http.put(combinePath(repositoryBaseUrl, id), jsonEntity).then(function (response) {
-                    window.alert(response.status);
-                });
+                $http.put(combinePath(repositoryBaseUrl, id), jsonEntity).then(saveCurrentSuccess, saveCurrentFailure);
+            }
+
+            function saveCurrentSuccess(response) {
+                // show OK! message
+                currentEditing = currentEditingId = null;
+                isAdding = false;
+                $scope.isEditing[currentEditingId] = false;
+                callbackOnSaved();
+            }
+
+            function saveCurrentFailure(response) {
+                var modelResponse,
+                    modelProperty;
+
+                if (response.status === 400) {
+                    modelResponse = angular.fromJson(response.data.ModelState);
+                    if (modelResponse) {
+                        for (modelProperty in modelResponse) {
+                            $scope.modelStatus[getPropertyPath(modelProperty)] = modelResponse[modelProperty][0];
+                        }
+                    }
+                    // add more errors as alerts
+                }
+                // add other errors or a generic one
             }
         }
+
+        function getPropertyPath(path) {
+            var firstSeparatorIndex = path.indexOf(".");
+            return firstSeparatorIndex >= 0 ? path.substr(firstSeparatorIndex + 1) : path;
+        }
+
 
         function getEntity(id) {
             return $scope.currencies.find(function (entity) {
@@ -101,18 +130,36 @@
             /// </summary>
             /// <param name="$event" type="type">the event data</param>
             /// <param name="id" type="type">the Id of the row to modify</param>
-            if (currentEditingId !== id) {
-                endEdit(true);
+            var delegateTarget = $event.target;
+            if (currentEditingId !== null && currentEditingId !== id) {
+                endEdit(true, function () {
+                    setEditMode();
+                });
             }
-            editMode(id);
-            currentEditing = $event.delegateTarget;
-            $event.stopPropagation();
+            else if (currentEditingId === null || currentEditingId !== id) {
+                setEditMode();
+            }
+
+            function setEditMode() {
+                editMode(id);
+                currentEditing = delegateTarget;
+                $event.stopPropagation();
+                $scope.modelStatus = [];
+            }
         };
 
         function editMode(id) {
-            $scope.isEditing[id] = true;
-            currentEditingId = id;
+            setEditing(id);
             currentEditingEntity = angular.copy(getEntity(id));
+        }
+
+        function setEditing(editEntityId) {
+            var len, i, id;
+            for (i = 0, len = $scope.currencies.length; i < len; i++) {
+                id = $scope.currencies[i].Id;
+                $scope.isEditing[id] = id === editEntityId;
+            }
+            currentEditingId = editEntityId;
         }
 
         $scope.isEditMode = function () {
@@ -131,15 +178,10 @@
         };
 
         $scope.addEntity = function ($event) {
-            isAdding = true;
             $scope.currencies.push({
-                Id: newEntityId,
-                Name: null,
-                Currency: null,
-                Symbol : null
+                Id: newEntityId
             });
-            $scope.isEditing[newEntityId] = true;
-            currentEditingId = newEntityId;
+            setAdding();
             $event.stopPropagation();
         };
 
@@ -160,6 +202,12 @@
         $http.get(repositoryBaseUrl).then(function (data) {
             $scope.currencies =  angular.fromJson(data.data);
         });
+
+        function setAdding() {
+            $scope.modelStatus = [];
+            isAdding = true;
+            setEditing(newEntityId);
+        }
     });
 
     // DIRECTIVES
@@ -196,5 +244,15 @@
                 }
             });
         };
+    });
+
+    app.directive("tooltip", function () {
+        function link(scope, element, attributes) {
+            $(element).tooltip();
+        }
+
+        return {
+            link: link
+        }
     });
 })();

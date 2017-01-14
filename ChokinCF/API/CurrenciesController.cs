@@ -87,7 +87,7 @@ namespace ChokinCF.API
         [ResponseType(typeof(Currency))]
         public IHttpActionResult PostCurrency(Currency currency)
         {
-            if (!ModelState.IsValid)
+            if (currency == null || !ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
