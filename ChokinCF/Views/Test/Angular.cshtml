@@ -4,7 +4,7 @@
 
 <h2>Currencies</h2>
 
-<div id="main" class="col-md-6" ng-app="angularTest" ng-controller="SpreadsheetModeEdit" entity-repository="currencies" entity-name="currency">
+<div id="main" class="col-md-6" ng-app="chokin" ng-controller="chokin.SpreadsheetModeEdit" entity-repository="currencies" entity-name="currency">
     <table class="table" enter-pressed="endEdit(true)" escape-pressed="endEdit(false)">
         <thead>
             <tr>
@@ -48,6 +48,8 @@
 </div>
 
 @section scripts {
-    @Scripts.Render("~/Scripts/app/angular_test.js")
+    @Scripts.Render("~/Scripts/app/app.js")
+    @Scripts.Render("~/Scripts/app/spreadsheet_entity_editor.js")
+    @Scripts.Render("~/Scripts/app/chokin_directives.js")
     @Scripts.Render("~/Scripts/app/alerts.js")
 }

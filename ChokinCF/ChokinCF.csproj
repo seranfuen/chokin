@@ -339,7 +339,9 @@
     </Content>
     <Content Include="Scripts\angular\angular.min.js" />
     <Content Include="Scripts\app\alerts.js" />
-    <Content Include="Scripts\app\angular_test.js" />
+    <Content Include="Scripts\app\app.js" />
+    <Content Include="Scripts\app\chokin_directives.js" />
+    <Content Include="Scripts\app\spreadsheet_entity_editor.js" />
     <Content Include="Scripts\bootbox\bootbox.js" />
     <Content Include="Scripts\bootstrap\css\bootstrap-theme.css" />
     <Content Include="Scripts\bootstrap\css\bootstrap-theme.min.css" />
