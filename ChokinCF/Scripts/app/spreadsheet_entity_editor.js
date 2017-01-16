@@ -65,6 +65,10 @@
             $scope.currencies.splice(indexAdding, 1);
         }
 
+        function showSuccessMessage(message) {
+            $scope.$broadcast("alertEmitted", { type: "success", message: message });
+        }
+
         function saveCurrent(id, callbackOnEditionEnded) {
             var savingEntity = getEntity(id);
             var jsonEntity =  angular.toJson(savingEntity);
@@ -80,6 +84,7 @@
                 if (typeof callbackOnEditionEnded === "function") {
                     callbackOnEditionEnded();
                 }
+                showSuccessMessage("Successfully saved");
             }
 
             function saveCurrentFailure(response) {

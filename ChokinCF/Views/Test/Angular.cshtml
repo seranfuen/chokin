@@ -31,7 +31,7 @@
                     <span ng-if="!isEditing[currency.Id]">{{currency.Symbol}}</span>
                     <input ng-if="isEditing[currency.Id]" ng-model="currency.Symbol" />
                     <span class="text-danger" ng-if="isEditing[currency.Id]">{{modelStatus.Symbol}}</span>
-                </td>   
+                </td>
                 <td>
                     <span ng-if="!isEditing[currency.Id]">{{currency.Country}}</span>
                     <input ng-if="isEditing[currency.Id]" ng-model="currency.Country" />
@@ -40,12 +40,14 @@
             </tr>
         </tbody>
     </table>
-    <div ng-if="!isEditMode() && !isAddingMode()" ng-click="addEntity($event)" tooltip class="btn btn-primary" title="Add a new row">New</div>
+    <div class="col-md-3">
+        <div ng-if="!isEditMode() && !isAddingMode()" ng-click="addEntity($event)" tooltip class="btn btn-primary" title="Add a new row">New</div>
+    </div>
+    <div class="col-md-9" alert-box></div>
 </div>
 
-<div class="row">
-    
-</div>
+<div class="row"></div>
+
 
 @section scripts {
     @Scripts.Render("~/Scripts/app/app.js")

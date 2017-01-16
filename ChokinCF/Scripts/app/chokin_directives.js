@@ -19,8 +19,7 @@
         return function (scope, element, attributes) {
             $(element).keyup(function (event) {
                 if (event.keyCode === 27) {
-                    scope.$apply(function ()
-                    {
+                    scope.$apply(function () {
                         scope.$eval(attributes.escapePressed)
                     });
                 }
@@ -47,6 +46,20 @@
 
         return {
             link: link
+        }
+    });
+
+    app.directive("alertBox", function () {
+        return {
+            template : "<div class=\"bootstrap-fixed-alert-container\"><div class=\"bootstrap-fixed-alert\"></div></div>",
+            link: function link(scope, element, attributes) {
+                scope.$on("alertEmitted", function (event, args) {
+                    $(element).find(".bootstrap-fixed-alert").showBootstrapAlert(args.message, {
+                        alertType: args.type,
+                        timeout: 2000
+                    });
+                });
+            }
         }
     });
 })();

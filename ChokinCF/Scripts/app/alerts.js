@@ -24,6 +24,7 @@
 
         function showAlert(element) {
             addAlertLevel(element);
+            $(element).removeClass("alert-success alert-info alert-warning alert-danger");
             $(element).addClass("alert").addClass(getAlertClass(options.alertType)).html(message).fadeIn();
             if (options["timeout"]) {
                 window.setTimeout(function () {
