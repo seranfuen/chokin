@@ -57,10 +57,13 @@ namespace ChokinCF.API
             {
                 return BadRequest(ModelState);
             }
-
-            if (id != currency.Id)
+            else if (id != currency.Id)
             {
                 return BadRequest();
+            }
+            else if (_repository.HasCurrency(currency.Name))
+            {
+                return BadRequest("There is already another currency with the same name");
             }
 
             _repository.Edit(currency);
@@ -91,7 +94,10 @@ namespace ChokinCF.API
             {
                 return BadRequest(ModelState);
             }
-
+            else if (_repository.HasCurrency(currency.Name))
+            {
+                return BadRequest("There is already another currency with the same name");
+            }
             _repository.AddEntity(currency);
             _repository.SaveChanges();
 

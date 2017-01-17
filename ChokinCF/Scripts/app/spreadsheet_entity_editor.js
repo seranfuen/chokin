@@ -12,12 +12,11 @@
 
 (function () {
     "use strict";
-    var app = angular.module("chokin");
+    var app = angular.module("chokin", ["serfuenAlerts"]);
     app.controller("chokin.SpreadsheetModeEdit", function ($scope, $http, $attrs) {
         var isAdding = false,
             currentEditingEntity,
             newEntityId = 0,
-            currentEditing = null,
             currentEditingId = null,
             repositoryBaseUrl = "",
             combinePath = serfuen.utils.combinePath;
@@ -51,7 +50,7 @@
 
         function exitEditMode() {
             $scope.isEditing[currentEditingId] = false;
-            currentEditing = null;
+            $scope.currentEditing = null;
             currentEditingId = null;
             isAdding = false;
         }
@@ -69,9 +68,13 @@
             $scope.$broadcast("alertEmitted", { type: "success", message: message });
         }
 
+        function showFailureMessage(message) {
+            $scope.$broadcast("alertEmitted", { type: "danger", message: message });
+        }
+
         function saveCurrent(id, callbackOnEditionEnded) {
             var savingEntity = getEntity(id);
-            var jsonEntity =  angular.toJson(savingEntity);
+            var jsonEntity = angular.toJson(savingEntity);
             if (id === newEntityId) {
                 $http.post(repositoryBaseUrl, jsonEntity).then(saveCurrentSuccess, saveCurrentFailure);
             } else {
@@ -89,18 +92,23 @@
 
             function saveCurrentFailure(response) {
                 var modelResponse,
-                    modelProperty;
+                    modelProperty,
+                    responseMessage;
 
+                $scope.modelStatus = [];
                 if (response.status === 400) {
                     modelResponse = angular.fromJson(response.data.ModelState);
                     if (modelResponse) {
                         for (modelProperty in modelResponse) {
                             $scope.modelStatus[getPropertyPath(modelProperty)] = modelResponse[modelProperty][0];
                         }
+                    } else {
+                        showFailureMessage(response.data.Message || "Unknown validation error");
                     }
-                    // add more errors as alerts
+                } else {
+                    responseMessage = response.data !== null ? response.data.Message : "Error connecting to server";
+                    showFailureMessage(responseMessage);
                 }
-                // add other errors or a generic one
             }
         }
 
@@ -123,7 +131,7 @@
 
         $(document).click(function (event) {
             if (currentEditingId !== null) {
-                if (!$(event.target).closest(currentEditing).length) {
+                if (!$(event.target).closest($scope.currentEditing).length) {
                     endEdit(true);
                     $scope.$apply();
                 }
@@ -188,7 +196,7 @@
         };
 
         $http.get(repositoryBaseUrl).then(function (data) {
-            $scope.currencies =  angular.fromJson(data.data);
+            $scope.currencies = angular.fromJson(data.data);
         });
 
         $scope.startEdit = function ($event, id) {
@@ -210,7 +218,7 @@
 
             function setEditMode() {
                 editMode(id);
-                currentEditing = delegateTarget;
+                $scope.currentEditing = delegateTarget;
                 $event.stopPropagation();
                 $scope.modelStatus = [];
             }

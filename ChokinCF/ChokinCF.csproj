@@ -339,6 +339,7 @@
     </Content>
     <Content Include="Scripts\angular\angular.min.js" />
     <Content Include="Scripts\app\alerts.js" />
+    <Content Include="Scripts\app\serfuen_angular_alerts.js" />
     <Content Include="Scripts\app\app.js" />
     <Content Include="Scripts\app\chokin_directives.js" />
     <Content Include="Scripts\app\spreadsheet_entity_editor.js" />

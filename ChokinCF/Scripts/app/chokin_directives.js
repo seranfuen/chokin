@@ -39,27 +39,22 @@
         };
     });
 
-    app.directive("tooltip", function () {
-        function link(scope, element, attributes) {
-            $(element).tooltip();
-        }
-
+    app.directive("addingRow", function () {
         return {
-            link: link
-        }
-    });
-
-    app.directive("alertBox", function () {
-        return {
-            template : "<div class=\"bootstrap-fixed-alert-container\"><div class=\"bootstrap-fixed-alert\"></div></div>",
-            link: function link(scope, element, attributes) {
-                scope.$on("alertEmitted", function (event, args) {
-                    $(element).find(".bootstrap-fixed-alert").showBootstrapAlert(args.message, {
-                        alertType: args.type,
-                        timeout: 2000
-                    });
-                });
+            link: function (scope, element, attributes) {
+                if (scope.currency !== null && scope.currency.Id === 0) {
+                    scope.$parent.currentEditing = element;
+                }
             }
         }
     });
+
+    app.directive("tooltip", function () {
+        return {
+            link: function (scope, element, attributes) {
+                $(element).tooltip();
+            }
+        }
+    });
+
 })();
