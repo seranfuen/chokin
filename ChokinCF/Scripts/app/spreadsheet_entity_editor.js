@@ -158,6 +158,12 @@
             currentEditingId = editEntityId;
         }
 
+        $scope.onRowClick = function (event, entityId) {
+            if (currentEditingId !== entityId) {
+                $scope.startEdit(event, entityId);
+            }
+        };
+
         $scope.isEditMode = function () {
             var i = $scope.isEditing.length;
 
@@ -185,6 +191,10 @@
             return id === newEntityId;
         };
 
+        $scope.test = function (parameters) {
+            window.alert("HEY " + parameters);
+        }
+
         $scope.confirmDelete = function (id) {
             bootbox.confirm("Do you wish to delete this entry?", function (result) {
                 if (result) {
@@ -206,7 +216,7 @@
             /// </summary>
             /// <param name="$event" type="type">the event data</param>
             /// <param name="id" type="type">the Id of the row to modify</param>
-            var delegateTarget = $event.target;
+            var delegateTarget = $event.currentTarget;
             if (currentEditingId !== null && currentEditingId !== id) {
                 endEdit(true, function () {
                     setEditMode();

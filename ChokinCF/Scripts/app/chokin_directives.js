@@ -39,12 +39,47 @@
         };
     });
 
-    app.directive("addingRow", function () {
+    app.directive("entityRow", function () {
         return {
             link: function (scope, element, attributes) {
                 if (scope.currency !== null && scope.currency.Id === 0) {
                     scope.$parent.currentEditing = element;
                 }
+
+                $(element).focusin(function (event) {
+                    scope.currentSelectedInput = event.target;
+                });
+
+                $(element).keydown(function (event) {
+                    if (event.keyCode === 9) {
+                        if (!event.shiftKey && isLast()) {
+                            setFocus(getRowFirstInput());
+                        } else if (event.shiftKey && isFirst()) {
+                            setFocus(getRowLastInput());
+                        }
+                    }
+
+                    function isFirst() {
+                        return event.target === getRowFirstInput().get(0);
+                    }
+
+                    function isLast() {
+                        return event.target === getRowLastInput().get(0);
+                    }
+
+                    function getRowFirstInput() {
+                        return $(element).find("input:first");
+                    }
+
+                    function getRowLastInput() {
+                        return $(element).find("input:last");
+                    }
+
+                    function setFocus(inputElement) {
+                        inputElement.focus();
+                        event.preventDefault();
+                    }
+                });
             }
         }
     });
@@ -56,5 +91,4 @@
             }
         }
     });
-
 })();

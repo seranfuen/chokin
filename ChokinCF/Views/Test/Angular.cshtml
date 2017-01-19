@@ -15,7 +15,7 @@
             <tr>
         </thead>
         <tbody class="entity-list-body">
-            <tr ng-cloak ng-repeat="currency in currencies" adding-row ng-click="startEdit($event, currency.Id)" ng-class="getEditingClass(currency.Id)">
+            <tr ng-cloak ng-repeat="currency in currencies" entity-row ng-click="onRowClick($event, currency.Id)" ng-class="getEditingClass(currency.Id)">
                 <td ng-if="isEditMode() && !isAddingMode()" class="action-button-container">
                     <img tooltip ng-click="confirmDelete(currency.Id)" ng-if="isEditing[currency.Id]" class="delete-entity-button action-button-normal action-button" src="~/Content/images/cancel.png" title="Click to delete this row" />
                 </td>
