@@ -109,6 +109,7 @@
                     responseMessage = response.data !== null ? response.data.Message : "Error connecting to server";
                     showFailureMessage(responseMessage);
                 }
+                $scope.$broadcast("validationError");
             }
         }
 

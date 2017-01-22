@@ -46,6 +46,31 @@
                     scope.$parent.currentEditing = element;
                 }
 
+                scope.$on("validationError", function () {
+                    if (scope.$parent.isEditing[scope.currency.Id]) {
+                        flashError(element, function () {
+                            getRowFirstInput().focus()
+                        });
+                    }
+                });
+
+                function flashError(element, callback) {
+                    var validationErrorClass = "row-validation-error";
+                    var blinkingSpeedMs = 100;
+
+                    $(element).toggleClass(validationErrorClass);
+                    setTimeout(function () {
+                        $(element).toggleClass(validationErrorClass);
+                        setTimeout(function () {
+                            $(element).toggleClass(validationErrorClass);
+                            setTimeout(function () {
+                                $(element).toggleClass(validationErrorClass);
+                                callback();
+                            }, blinkingSpeedMs);
+                        }, blinkingSpeedMs);
+                    }, blinkingSpeedMs);
+                }
+
                 $(element).focusin(function (event) {
                     scope.currentSelectedInput = event.target;
                 });
@@ -67,19 +92,19 @@
                         return event.target === getRowLastInput().get(0);
                     }
 
-                    function getRowFirstInput() {
-                        return $(element).find("input:first");
-                    }
-
-                    function getRowLastInput() {
-                        return $(element).find("input:last");
-                    }
-
                     function setFocus(inputElement) {
                         inputElement.focus();
                         event.preventDefault();
                     }
                 });
+
+                function getRowFirstInput() {
+                    return $(element).find("input:first");
+                }
+
+                function getRowLastInput() {
+                    return $(element).find("input:last");
+                }
             }
         }
     });
