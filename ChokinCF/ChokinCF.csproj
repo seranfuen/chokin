@@ -235,6 +235,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API\ApiControllerBase.cs" />
+    <Compile Include="API\AuthController.cs" />
     <Compile Include="API\CurrenciesController.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
@@ -243,6 +244,7 @@
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="App_Start\UnityConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Auth\SimpleAuthorizationServerProvider.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\ControllerBase.cs" />
     <Compile Include="Controllers\CurrenciesController.cs" />
@@ -278,7 +280,9 @@
       <DependentUpon>Entities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\T4\ModelEntityIterator.cs" />
+    <Compile Include="Models\UserModel.cs" />
     <Compile Include="Repository\AccountRepository.cs" />
+    <Compile Include="Repository\AuthRepository.cs" />
     <Compile Include="Repository\Base\IRepository.cs" />
     <Compile Include="Repository\Base\RepositoryBase.cs" />
     <Compile Include="Repository\CurrencyRepository.cs" />
@@ -361,6 +365,7 @@
     <Content Include="Scripts\modernizr\modernizr.js" />
     <Content Include="Scripts\respond\respond.min.js" />
     <Content Include="Scripts\_references.js" />
+    <Content Include="Templates\Login.html" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -427,6 +432,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="bower.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Test\LoginTest.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

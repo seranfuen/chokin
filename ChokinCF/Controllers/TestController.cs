@@ -13,5 +13,11 @@ namespace ChokinCF.Controllers
         {
             return View();
         }
+
+        [AllowAnonymous]
+        public ActionResult LoginTest()
+        {
+            return View();
+        }
     }
 }

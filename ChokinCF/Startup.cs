@@ -1,8 +1,12 @@
-﻿using ChokinCF.Models;
+﻿using ChokinCF.Auth;
+using ChokinCF.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Owin;
+using Microsoft.Owin.Security.OAuth;
 using Owin;
+using System;
+using System.Web.Http;
 
 [assembly: OwinStartupAttribute(typeof(ChokinCF.Startup))]
 namespace ChokinCF
@@ -11,9 +15,27 @@ namespace ChokinCF
     {
         public void Configuration(IAppBuilder app)
         {
-            ConfigureAuth(app);
+            var config = new HttpConfiguration();
+            WebApiConfig.Register(config);
+            //ConfigureAuth(app);
+            ConfigureOAuth(app);
             InitializeAdmin();
             InitializeTestUsers();
+        }
+        private void ConfigureOAuth(IAppBuilder app)
+        {
+            OAuthAuthorizationServerOptions OAuthServerOptions = new OAuthAuthorizationServerOptions()
+            {
+                AllowInsecureHttp = true,
+                TokenEndpointPath = new PathString("/token"),
+                AccessTokenExpireTimeSpan = TimeSpan.FromDays(1),
+                Provider = new SimpleAuthorizationServerProvider()
+            };
+
+            // Token Generation
+            app.UseOAuthAuthorizationServer(OAuthServerOptions);
+            app.UseOAuthBearerAuthentication(new OAuthBearerAuthenticationOptions());
+
         }
 
         private void InitializeTestUsers()

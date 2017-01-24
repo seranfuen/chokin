@@ -12,6 +12,7 @@ namespace ChokinCF
         public static void RegisterRoutes(RouteCollection routes)
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
+            routes.IgnoreRoute("templates/");
 
             routes.MapRoute(
                 name: "Default",

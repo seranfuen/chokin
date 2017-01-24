@@ -11,7 +11,6 @@ namespace ChokinCF
         public static void Register(HttpConfiguration config)
         {
             config.MapHttpAttributeRoutes();
-
             config.Formatters.JsonFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/html"));
 
             config.Routes.MapHttpRoute(

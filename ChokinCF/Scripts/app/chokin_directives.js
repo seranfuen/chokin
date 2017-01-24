@@ -116,4 +116,11 @@
             }
         }
     });
+
+    app.directive("chokinLoginForm", function () {
+        return {
+            templateUrl: "/Templates/Login.html"
+        }
+    });
+
 })();

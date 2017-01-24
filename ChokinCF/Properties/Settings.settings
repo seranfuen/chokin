@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ChokinCF.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Issuer" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ChokinIssuer</Value>
+    </Setting>
+    <Setting Name="Audience" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ChokinAudience</Value>
+    </Setting>
+    <Setting Name="AudienceSecret" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">l9zOZTzHCYsov64u0W3PwI9E2c4XkX66</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
